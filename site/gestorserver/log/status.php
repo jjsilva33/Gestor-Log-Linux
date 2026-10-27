@@ -107,11 +107,19 @@ try {
             <div class="chart-grid">
                 <div class="chart-card">
                     <div class="chart-card-title">Acessos por dia (últimos 30 dias)</div>
-                    <div id="graficoAcessosDia" class="chart-box"></div>
+                    <?php if (empty($totaispordia)): ?>
+                        <p style="text-align:center; padding:60px 0;">Nenhum registro nos últimos 30 dias.</p>
+                    <?php else: ?>
+                        <div id="graficoAcessosDia" class="chart-box"></div>
+                    <?php endif; ?>
                 </div>
                 <div class="chart-card">
                     <div class="chart-card-title">Domínios mais acessados</div>
-                    <div id="graficoDominios" class="chart-box"></div>
+                    <?php if (empty($dadospizzadominios)): ?>
+                        <p style="text-align:center; padding:60px 0;">Nenhum acesso de domínio (web-proxy) registrado nos últimos 30 dias.</p>
+                    <?php else: ?>
+                        <div id="graficoDominios" class="chart-box"></div>
+                    <?php endif; ?>
                 </div>
             </div>
 
@@ -122,6 +130,7 @@ try {
     </div>
 </div>
 
+<?php if (!empty($totaispordia) || !empty($dadospizzadominios)): ?>
 <script src="https://code.highcharts.com/highcharts.js"></script>
 <script>
 Highcharts.setOptions({
@@ -131,6 +140,7 @@ Highcharts.setOptions({
     legend: { itemStyle: { color: '#8b93a1' }, itemHoverStyle: { color: '#e4e7ec' } }
 });
 
+<?php if (!empty($totaispordia)): ?>
 Highcharts.chart('graficoAcessosDia', {
     chart: { type: 'column' },
     title: { text: '' },
@@ -145,6 +155,9 @@ Highcharts.chart('graficoAcessosDia', {
         gridLineColor: '#242931',
         labels: { style: { color: '#8b93a1' } }
     },
+    plotOptions: {
+        column: { maxPointWidth: 56 }
+    },
     series: [{
         name: 'Registros',
         data: <?php echo json_encode($totaispordia); ?>,
@@ -153,7 +166,9 @@ Highcharts.chart('graficoAcessosDia', {
         borderWidth: 0
     }]
 });
+<?php endif; ?>
 
+<?php if (!empty($dadospizzadominios)): ?>
 Highcharts.chart('graficoDominios', {
     chart: { type: 'pie' },
     title: { text: '' },
@@ -177,7 +192,9 @@ Highcharts.chart('graficoDominios', {
         data: <?php echo json_encode($dadospizzadominios); ?>
     }]
 });
+<?php endif; ?>
 </script>
+<?php endif; ?>
 
 
 
