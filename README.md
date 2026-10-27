@@ -27,11 +27,11 @@ apt-get install mariadb-server -y
 ```
 #### Executar o script de instalação segura do mariadb
 ```
-mysql_secure_installation
+mariadb-secure-installation
 ```
 #### Logar no mariadb
 ```
-mysql -u root -p
+mariadb -u root -p
 ```
 #### Criar um usuario no mariadb para o sistema/site
 ```
@@ -77,8 +77,8 @@ systemctl restart apache2
 #### Importação das tabelas do banco de dados
 ```
 cd /var/www/html/Gestor-Log-Mikrotik-Linux
-mysql -p Syslog < usuarios.sql
-mysql -p Syslog < usuario_log.sql
+mariadb -p Syslog < usuarios.sql
+mariadb -p Syslog < usuario_log.sql
 ```
 #### Configuração do arquivo site.php
 ```
