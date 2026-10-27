@@ -15,11 +15,11 @@ apt-get install -y apache2
 ```
 #### Instalar o php e suas extensões
 ```
-apt-get install php8.3 php8.3-mbstring php8.3-mysql php8.3-xml -y
+apt-get install php php-mbstring php-mysql php-xml -y
 ```
 #### Habilitar a extensão pdo_mysql do php
 ```
-sed -i 's|;extension=pdo_mysql|extension=pdo_mysql|g' /etc/php/8.3/apache2/php.ini
+sed -i 's|;extension=pdo_mysql|extension=pdo_mysql|g' /etc/php/$(php -r 'echo PHP_MAJOR_VERSION.".".PHP_MINOR_VERSION;')/apache2/php.ini
 ```
 #### Instalar mariadb
 ```
