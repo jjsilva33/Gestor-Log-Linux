@@ -40,40 +40,25 @@ try {
     <div class="row clearfix">
         <div class="col-md-12 column">
             <span class="label label-default">Status do log</span>
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>
-                            Total de usuários
-                        </th>
-                        <th>
-                            Status
-                        </th>
-                        <th>
-                            Espaço Livre
-                        </th>
-                        <th>
-                            Espaço Total
-                        </th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>
-                            <?php echo $totalusuariolog; ?>
-                        </td>
-                        <td>
-                            Ativo
-                        </td>
-                        <td>
-                            <?php echo $espaco_disco_formatado; ?>
-                        </td>
-                        <td>
-                            <?php echo $disco_total_formatado; ?>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+
+            <div class="stat-grid">
+                <div class="stat-card accent">
+                    <div class="stat-label">Total de usuários</div>
+                    <div class="stat-value"><?php echo $totalusuariolog; ?></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Status</div>
+                    <div class="stat-value ok">Ativo</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Espaço livre</div>
+                    <div class="stat-value"><?php echo $espaco_disco_formatado; ?></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Espaço total</div>
+                    <div class="stat-value"><?php echo $disco_total_formatado; ?></div>
+                </div>
+            </div>
 
             <?php
             require("backuplog/listar_arquivos.php");

@@ -1,0 +1,449 @@
+/* ==========================================================================
+   Gestor Log — Tema escuro moderno
+   Sobrescreve o Bootstrap 3 para dar uma aparência de dashboard atual,
+   no estilo Kibana/Elastic (fundo escuro, cartões, acentos em teal).
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+  --bg: #15181e;
+  --bg-elevated: #1b1f27;
+  --bg-elevated-2: #20252e;
+  --bg-hover: #262c37;
+  --border: #2c323d;
+  --border-soft: #242931;
+  --text: #e4e7ec;
+  --text-muted: #8b93a1;
+  --text-faint: #5b6472;
+  --accent: #2dd4bf;
+  --accent-strong: #14b8a6;
+  --accent-soft: rgba(45, 212, 191, 0.12);
+  --danger: #f66d6d;
+  --warning: #f5a623;
+  --info: #4da3ff;
+  --radius: 10px;
+  --radius-sm: 6px;
+  --shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  background: var(--bg) !important;
+  color: var(--text);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  background-image:
+    radial-gradient(circle at 15% 0%, rgba(45, 212, 191, 0.06), transparent 40%),
+    radial-gradient(circle at 85% 10%, rgba(77, 163, 255, 0.05), transparent 35%);
+  background-attachment: fixed;
+}
+
+::selection { background: var(--accent-soft); color: var(--text); }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: #3a414d; }
+
+a { color: var(--accent); text-decoration: none; transition: color .15s ease; }
+a:hover, a:focus { color: #67e8de; text-decoration: none; }
+
+h1, h2, h3, h4, h5, h6 { color: var(--text); font-weight: 600; letter-spacing: -0.01em; }
+
+.container {
+  background: transparent;
+  max-width: 1320px;
+}
+
+/* ---------------------------------------------------------------- */
+/* Navbar                                                            */
+/* ---------------------------------------------------------------- */
+.navbar {
+  min-height: 60px;
+  border-radius: 0;
+  margin-bottom: 28px;
+}
+
+.navbar-default {
+  background: linear-gradient(180deg, #1a1e26, #171b22);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 4px 8px;
+}
+
+.navbar-default .navbar-brand {
+  color: var(--text) !important;
+  font-weight: 700;
+  font-size: 17px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.navbar-default .navbar-brand::before {
+  content: "";
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  background: var(--accent);
+  box-shadow: 0 0 10px rgba(45, 212, 191, 0.7);
+}
+
+.navbar-default .navbar-nav > li > a {
+  color: var(--text-muted) !important;
+  font-weight: 500;
+  padding: 18px 16px;
+  transition: color .15s ease, background .15s ease;
+}
+
+.navbar-default .navbar-nav > li > a:hover,
+.navbar-default .navbar-nav > li > a:focus {
+  color: var(--text) !important;
+  background: var(--bg-hover) !important;
+}
+
+.navbar-default .navbar-nav > .active > a,
+.navbar-default .navbar-nav > .active > a:hover {
+  color: var(--text) !important;
+  background: var(--accent-soft) !important;
+  border-radius: var(--radius-sm);
+}
+
+.navbar-default .navbar-toggle {
+  border-color: var(--border);
+}
+.navbar-default .navbar-toggle .icon-bar {
+  background-color: var(--text-muted);
+}
+.navbar-default .navbar-toggle:hover {
+  background: var(--bg-hover);
+}
+
+.navbar-collapse { border-color: var(--border) !important; }
+
+.dropdown-menu {
+  background: var(--bg-elevated-2);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  border-radius: var(--radius-sm);
+  padding: 6px;
+}
+.dropdown-menu > li > a {
+  color: var(--text-muted);
+  border-radius: 4px;
+  padding: 8px 12px;
+}
+.dropdown-menu > li > a:hover,
+.dropdown-menu > li > a:focus {
+  background: var(--bg-hover);
+  color: var(--text);
+}
+.dropdown-menu .divider {
+  background-color: var(--border);
+  margin: 6px 0;
+}
+
+@media (max-width: 767px) {
+  .navbar-default .navbar-nav .open .dropdown-menu > li > a { color: var(--text-muted); }
+}
+
+/* ---------------------------------------------------------------- */
+/* Jumbotron / hero                                                  */
+/* ---------------------------------------------------------------- */
+.jumbotron {
+  background: linear-gradient(135deg, var(--bg-elevated), var(--bg-elevated-2));
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 48px 40px;
+}
+.jumbotron h1 { color: var(--text); font-size: 30px; }
+.jumbotron p { color: var(--text-muted); font-size: 15px; }
+
+/* ---------------------------------------------------------------- */
+/* Cards / panels / section labels                                   */
+/* ---------------------------------------------------------------- */
+.label.label-default {
+  display: inline-flex;
+  align-items: center;
+  background: transparent;
+  color: var(--text);
+  font-size: 18px;
+  font-weight: 600;
+  padding: 0 0 14px 0;
+  margin-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+  width: 100%;
+  letter-spacing: -0.01em;
+}
+
+.row.clearfix > .column,
+.container > .row.clearfix {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  margin-bottom: 24px;
+  box-shadow: var(--shadow);
+}
+
+/* ---------------------------------------------------------------- */
+/* Tables                                                            */
+/* ---------------------------------------------------------------- */
+.table {
+  background: var(--bg-elevated-2);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  color: var(--text);
+  border: 1px solid var(--border-soft);
+}
+
+.table > thead > tr > th {
+  background: #262c37;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  font-size: 11.5px;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+  border-bottom: 1px solid var(--border);
+  padding: 12px 14px;
+  white-space: nowrap;
+}
+
+.table > tbody > tr > td {
+  padding: 11px 14px;
+  border-top: 1px solid var(--border-soft);
+  vertical-align: middle;
+  color: var(--text);
+  font-size: 13.5px;
+}
+
+.table > tbody > tr:hover {
+  background: var(--bg-hover);
+}
+
+.table-striped > tbody > tr:nth-of-type(odd) {
+  background: rgba(255, 255, 255, 0.015);
+}
+
+/* Plain layout tables used for filter forms (border="0") */
+table[border="0"] {
+  background: transparent;
+  border: none;
+  width: 100%;
+}
+table[border="0"] td,
+table[border="0"] th {
+  border: none;
+  padding: 6px 10px 6px 0;
+  color: var(--text-muted);
+  font-size: 13px;
+  vertical-align: middle;
+}
+table[border="0"] th {
+  color: var(--text);
+  font-weight: 600;
+  padding-bottom: 10px;
+}
+
+/* ---------------------------------------------------------------- */
+/* Forms / inputs                                                    */
+/* ---------------------------------------------------------------- */
+input[type="text"],
+input[type="password"],
+input[type="date"],
+input[type="email"],
+input[type="number"],
+input[type="search"],
+select,
+textarea,
+.form-control {
+  background: var(--bg) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--text) !important;
+  border-radius: var(--radius-sm) !important;
+  padding: 8px 12px !important;
+  font-size: 13.5px !important;
+  font-family: inherit;
+  transition: border-color .15s ease, box-shadow .15s ease;
+  height: auto !important;
+  box-shadow: none !important;
+}
+
+input[type="text"]:focus,
+input[type="password"]:focus,
+input[type="date"]:focus,
+input[type="email"]:focus,
+input[type="number"]:focus,
+input[type="search"]:focus,
+select:focus,
+textarea:focus,
+.form-control:focus {
+  outline: none;
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 3px var(--accent-soft) !important;
+}
+
+select {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, var(--text-muted) 50%),
+    linear-gradient(135deg, var(--text-muted) 50%, transparent 50%) !important;
+  background-position: calc(100% - 16px) calc(50% - 2px), calc(100% - 11px) calc(50% - 2px);
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+  padding-right: 28px !important;
+}
+
+::placeholder { color: var(--text-faint); }
+
+/* Buttons (real .btn + raw submit/button inputs used throughout the app) */
+.btn,
+input[type="submit"],
+input[type="button"] {
+  background: var(--accent);
+  border: 1px solid var(--accent);
+  color: #0b1411;
+  font-weight: 600;
+  font-size: 13px;
+  padding: 8px 18px;
+  border-radius: var(--radius-sm);
+  box-shadow: none;
+  cursor: pointer;
+  transition: background .15s ease, transform .1s ease;
+}
+
+.btn:hover,
+.btn:focus,
+input[type="submit"]:hover,
+input[type="button"]:hover {
+  background: var(--accent-strong);
+  color: #0b1411;
+  transform: translateY(-1px);
+}
+
+.btn:active,
+input[type="submit"]:active,
+input[type="button"]:active {
+  transform: translateY(0);
+}
+
+.btn-primary,
+.btn-large {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #0b1411;
+}
+.btn-primary:hover, .btn-large:hover { background: var(--accent-strong); }
+
+input[type="image"] {
+  filter: grayscale(0.2) brightness(1.1);
+  transition: transform .15s ease, filter .15s ease;
+  background: transparent;
+}
+input[type="image"]:hover {
+  transform: scale(1.08);
+  filter: brightness(1.3) drop-shadow(0 0 4px rgba(246, 109, 109, 0.5));
+}
+
+/* ---------------------------------------------------------------- */
+/* Pagination                                                        */
+/* ---------------------------------------------------------------- */
+.pagination {
+  margin-top: 18px;
+}
+.pagination > li > a {
+  background: var(--bg-elevated-2);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  margin: 0 3px;
+  border-radius: var(--radius-sm) !important;
+}
+.pagination > li > a:hover {
+  background: var(--bg-hover);
+  color: var(--text);
+  border-color: var(--accent);
+}
+.pagination > .active > a {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #0b1411;
+}
+
+/* ---------------------------------------------------------------- */
+/* Stat cards (status.php, home.php)                                 */
+/* ---------------------------------------------------------------- */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.stat-card {
+  background: linear-gradient(160deg, var(--bg-elevated-2), var(--bg-elevated));
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  box-shadow: var(--shadow);
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius);
+  padding: 1px;
+  background: linear-gradient(135deg, rgba(45, 212, 191, 0.35), transparent 60%);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+.stat-card .stat-label {
+  color: var(--text-muted);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.stat-card .stat-value {
+  color: var(--text);
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.stat-card.accent .stat-value { color: var(--accent); }
+.stat-card .stat-value.ok { color: var(--accent); }
+
+/* ---------------------------------------------------------------- */
+/* Misc overrides                                                    */
+/* ---------------------------------------------------------------- */
+hr { border-color: var(--border); }
+
+#pop {
+  background: var(--bg-elevated-2) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--text) !important;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+::-webkit-calendar-picker-indicator { filter: invert(0.8); }
+
+p { color: var(--text-muted); }
