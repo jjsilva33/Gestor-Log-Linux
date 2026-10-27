@@ -108,7 +108,7 @@ $config_aberta = in_array($pagina_atual, $paginas_config, true);
 		</nav>
 
 		<div class="app-sidebar-footer">
-			<a href="https://www.bylltec.com.br/site/home.php?pagina=suporte&sistema=gestorlog" target="_blank" rel="noopener">
+			<a href="#">
 				<span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18v-6a9 9 0 0 1 18 0v6"></path><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"></path></svg></span>
 				<span class="nav-label">Suporte &middot; v2.1.1</span>
 			</a>
