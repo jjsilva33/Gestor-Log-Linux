@@ -45,78 +45,42 @@ if (!isset($_SESSION['UsuarioID']) OR ($_SESSION['UsuarioNivel'] > $nivel_necess
 </head>
 
 <body>
-<div class="container">
-	<div class="row clearfix">
-		<div class="col-md-12 column">
-			<nav class="navbar navbar-default" role="navigation">
-				<div class="navbar-header">
-					 <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1"> <span class="sr-only">Toggle navigation</span><span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span></button> <a class="navbar-brand" href="?pagina=status">Status do Log</a>
-				</div>
+<?php
+$pagina_atual = $_REQUEST['pagina'];
+function nav_active($alvo, $atual) {
+	return ($atual === $alvo) ? ' active' : '';
+}
+?>
+<button type="button" class="app-sidebar-toggle" id="appSidebarToggle" aria-label="Abrir menu">
+	<span></span><span></span><span></span>
+</button>
+<div class="app-shell">
+	<aside class="app-sidebar" id="appSidebar">
+		<a class="app-sidebar-brand" href="?pagina=status">
+			<span class="dot"></span> Status do Log
+		</a>
 
-				<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-					<ul class="nav navbar-nav">
+		<nav class="app-sidebar-nav">
+			<a href="/site/gestorserver/log/?pagina=relatorio" class="<?php echo trim('nav-link' . nav_active('relatorio', $pagina_atual)); ?>">Relatorio</a>
+			<a href="/site/gestorserver/log/?pagina=estatistica" class="<?php echo trim('nav-link' . nav_active('estatistica', $pagina_atual)); ?>">Estatistica</a>
+			<a href="/site/gestorserver/log/?pagina=rank" class="<?php echo trim('nav-link' . nav_active('rank', $pagina_atual)); ?>">Top Rank</a>
 
-                                                <li>
-							<a href="/site/gestorserver/log/?pagina=relatorio">Relatorio</a>
-						</li>
-						<li>
-							<a href="/site/gestorserver/log/?pagina=estatistica">Estatistica</a>
-						</li>
-                                                <li>
-							<a href="/site/gestorserver/log/?pagina=rank">Top Rank</a>
-						</li>
-						<li class="dropdown">
-							 <a href="#" class="dropdown-toggle" data-toggle="dropdown">Configurar<strong class="caret"></strong></a>
-							<ul class="dropdown-menu">
-								<li>
-									<a href="?pagina=adicionar_usuario">Vincular usuario a IP</a>
-								</li>
-								<li>
-									<a href="?pagina=manutencao">Manutencao do log</a>
-								</li>
-								<li>
-									<a href="?pagina=atualizar">Atualizar sistema</a>
-								</li>
-<!--								<li>
-									<a href="https://www.bylltec.com.br/site/home.php?pagina=suporte">Ajudar no desenvolvimento</a>
-								</li>
-								<li class="divider">
-								</li>
-								<li>
-									<a href="#">Importar arquivo log</a>
-								</li>-->
-								<li class="divider">
-								</li>
-								<li>
-									<a href="https://www.bylltec.com.br/site/home.php?pagina=manual">Manual</a>
-								</li>
-<!--                                                                <li>
-									<a href="https://www.bylltec.com.br/site/home.php?pagina=manual">Versão Linux</a>
-								</li>-->
-							</ul>
-						</li>
-					</ul>
+			<div class="app-sidebar-section">Configurar</div>
+			<a href="?pagina=adicionar_usuario" class="<?php echo trim('nav-link' . nav_active('adicionar_usuario', $pagina_atual)); ?>">Vincular usuario a IP</a>
+			<a href="?pagina=manutencao" class="<?php echo trim('nav-link' . nav_active('manutencao', $pagina_atual)); ?>">Manutencao do log</a>
+			<a href="?pagina=atualizar" class="<?php echo trim('nav-link' . nav_active('atualizar', $pagina_atual)); ?>">Atualizar sistema</a>
+			<a href="https://www.bylltec.com.br/site/home.php?pagina=manual" target="_blank" rel="noopener">Manual</a>
+		</nav>
 
-					<ul class="nav navbar-nav navbar-right">
-						<li>
-							<a href="https://www.bylltec.com.br/site/home.php?pagina=suporte&sistema=gestorlog">Suporte - Versao 2.1.1</a>
-						</li>
-						<li>
-							<a href="/site/login/logout.php">Sair</a>
-						</li>
-					</ul>
-				</div>
-
-			</nav>
-
-
-
-
-
-
-
+		<div class="app-sidebar-footer">
+			<a href="https://www.bylltec.com.br/site/home.php?pagina=suporte&sistema=gestorlog" target="_blank" rel="noopener">Suporte &middot; v2.1.1</a>
+			<a href="/site/login/logout.php">Sair</a>
 		</div>
-	</div>
+	</aside>
+
+	<div class="app-sidebar-overlay" id="appSidebarOverlay"></div>
+
+	<main class="app-main">
 	<?php
 $pagina = $_REQUEST['pagina'];
 $tipografico = $_REQUEST['tipografico'];
@@ -166,6 +130,23 @@ if ($pagina ==''){
  }
 
  ?>
+	</main>
 </div>
+<script>
+(function () {
+	var sidebar = document.getElementById('appSidebar');
+	var toggle = document.getElementById('appSidebarToggle');
+	var overlay = document.getElementById('appSidebarOverlay');
+	function closeSidebar() {
+		sidebar.classList.remove('open');
+		overlay.classList.remove('visible');
+	}
+	toggle.addEventListener('click', function () {
+		sidebar.classList.toggle('open');
+		overlay.classList.toggle('visible');
+	});
+	overlay.addEventListener('click', closeSidebar);
+})();
+</script>
 </body>
 </html>
