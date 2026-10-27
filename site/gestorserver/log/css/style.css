@@ -319,13 +319,20 @@ h1, h2, h3, h4, h5, h6 { color: var(--text); font-weight: 600; letter-spacing: -
 /* Estado recolhido (desktop) */
 .app-sidebar.collapsed { width: 72px; }
 .app-sidebar.collapsed .app-sidebar-user-info,
-.app-sidebar.collapsed .app-sidebar-collapse,
 .app-sidebar.collapsed .nav-label,
 .app-sidebar.collapsed .nav-chevron,
 .app-sidebar.collapsed .app-sidebar-submenu {
   display: none;
 }
-.app-sidebar.collapsed .app-sidebar-user { justify-content: center; padding: 18px 10px; }
+.app-sidebar.collapsed .app-sidebar-user {
+  flex-direction: column;
+  gap: 10px;
+  justify-content: center;
+  padding: 18px 10px;
+}
+.app-sidebar.collapsed .app-sidebar-collapse {
+  transform: rotate(180deg);
+}
 .app-sidebar.collapsed .nav-link,
 .app-sidebar.collapsed .app-sidebar-section { justify-content: center; }
 
