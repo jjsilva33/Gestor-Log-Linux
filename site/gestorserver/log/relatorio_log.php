@@ -59,15 +59,18 @@ $sqlselecionausuariolog = "SELECT * FROM `usuario_log` ";
 $queryselecionausuariolog = $pdo->query($sqlselecionausuariolog);
 
 ?>
-<head>
-    <script src="exportar_excel.js"></script>
-</head>
-<h1>Exportar dados</h1>
-<p>Clique no botão abaixo para gerar o arquivo .xls do Excel</p>
-
-<input type="button" onclick="tableToExcel('testTable', 'W3C Example Table')" value="Exportar e fazer download">
+<script src="exportar_excel.js"></script>
 
 <div class="container">
+    <div class="row clearfix">
+        <div class="col-md-12 column">
+
+            <span class="label label-default">Exportar dados</span>
+            <p>Clique no botão abaixo para gerar o arquivo .xls do Excel</p>
+            <input type="button" onclick="tableToExcel('testTable', 'W3C Example Table')" value="Exportar e fazer download">
+        </div>
+    </div>
+
     <div class="row clearfix">
         <div class="col-md-12 column">
 
