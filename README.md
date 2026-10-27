@@ -66,7 +66,15 @@ git clone https://github.com/jjsilva33/Gestor-Log-Linux.git
 ```
 sed -i 's/#module(load="imudp")/module(load="imudp")/' /etc/rsyslog.conf
 sed -i 's/#input(type="imudp" port="514")/input(type="imudp" port="514")/' /etc/rsyslog.conf
-sudo systemctl restart systemd-journald
+systemctl restart rsyslog
+```
+Confira se a porta abriu:
+```
+ss -ulnp | grep 514
+```
+Se não aparecer nada, confira se as duas linhas abaixo estão sem `#` em `/etc/rsyslog.conf`:
+```
+grep -n 'imudp\|input(type="imudp"' /etc/rsyslog.conf
 ```
 
 #### Configuração do apache2
