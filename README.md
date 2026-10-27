@@ -3,7 +3,7 @@ Ferramenta para capturar logs de conexões em uma rede provida por um roteador m
 
 [Video demonstrativo](https://www.youtube.com/watch?v=wG0e7yudzT0)
 
-### Instalação em Debian 12
+### Instalação em Debian 13
 
 #### Atualizar lista de pacotes
 ```
@@ -15,11 +15,11 @@ apt-get install -y apache2
 ```
 #### Instalar o php e suas extensões
 ```
-apt-get install php8.2 php8.2-mbstring php8.2-mysql php8.2-xml -y
+apt-get install php8.3 php8.3-mbstring php8.3-mysql php8.3-xml -y
 ```
 #### Habilitar a extensão pdo_mysql do php
 ```
-sed -i 's|;extension=pdo_mysql|extension=pdo_mysql|g' /etc/php/8.2/apache2/php.ini
+sed -i 's|;extension=pdo_mysql|extension=pdo_mysql|g' /etc/php/8.3/apache2/php.ini
 ```
 #### Instalar mariadb
 ```
