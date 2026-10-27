@@ -21,6 +21,14 @@ $data2 = $_REQUEST['data2'];
 $tipo = $_REQUEST['tipo'];
 $conta = $_REQUEST['conta'];
 $ip = $_REQUEST['ipusuariolog'];
+$usuariolog = '';
+
+if ($data1 == '') {
+    $data1 = date('Y-m-d', strtotime('-30 days'));
+}
+if ($data2 == '') {
+    $data2 = date('Y-m-d');
+}
 
 try {
 
@@ -45,146 +53,140 @@ try {
     $stmt_filtro->execute();
     $resultfiltro = $stmt_filtro->fetchAll(PDO::FETCH_ASSOC);
 
-    $tudo2 = '';
     $acessos = array();
 
     foreach ($resultfiltro as $row_rslistafiltrografico2) {
         $dominio = $row_rslistafiltrografico2['Message'];
+        $nomefiltrocategoria = null;
+
         $posicao = strpos($dominio, 'http://');
         if ($posicao !== false && $posicao > 0) {
             $texto = substr($dominio, $posicao + 7);
             $string = explode("/", $texto);
             $nomefiltrocategoria = $string[0];
-            $acessos[] = $nomefiltrocategoria;
-        }
-        $posicao = strpos($nomefiltrocategoria, 'https://');
-        if ($posicao !== false && $posicao > 0) {
-            $texto = substr($nomefiltrocategoria, $posicao + 8);
-            $string = explode("/", $texto);
-            $nomefiltrocategoria = $string[0];
-            $array[] = $nomefiltrocategoria;
+        } else {
+            $posicao = strpos($dominio, 'https://');
+            if ($posicao !== false && $posicao > 0) {
+                $texto = substr($dominio, $posicao + 8);
+                $string = explode("/", $texto);
+                $nomefiltrocategoria = $string[0];
+            } else {
+                $posicao = strpos($dominio, 'CONNECT');
+                if ($posicao !== false && $posicao > 0) {
+                    $texto = substr($dominio, $posicao + 8);
+                    $string = explode(" ", $texto);
+                    $nomefiltrocategoria = $string[0];
+                }
+            }
         }
 
-        $posicao = strpos($nomefiltrocategoria, 'CONNECT');
-        if ($posicao !== false && $posicao > 0) {
-            $texto = substr($nomefiltrocategoria, $posicao + 8);
-            $string = explode(" ", $texto);
-            $nomefiltrocategoria = $string[0];
-            $array[] = $nomefiltrocategoria;
+        if ($nomefiltrocategoria !== null && $nomefiltrocategoria !== '') {
+            $acessos[] = $nomefiltrocategoria;
         }
     }
 
     $acessos_cont = array_count_values($acessos);
     arsort($acessos_cont);
-
-    foreach (array_slice($acessos_cont, 0, 30) as $chave => $conteudo) {
-        $tudo = "['$chave',$conteudo],";
-        $tudo2 .= $tudo;
+    $dadosfunil = array();
+    foreach (array_slice($acessos_cont, 0, 30, true) as $chave => $conteudo) {
+        $dadosfunil[] = array($chave, $conteudo);
     }
 } catch (PDOException $e) {
     echo "Failed to connect to MySQL: " . $e->getMessage();
     exit();
 }
+
+$titulo_grafico = 'Utilização por domínio (funil)';
+if ($usuariolog !== '') {
+    $titulo_grafico .= " — $usuariolog";
+}
+if ($ip !== '') {
+    $titulo_grafico .= " (IP: $ip)";
+}
 ?>
 
-<form action="?pagina=estatistica" method="POST">
-    <table border="0" align="center">
-        <tbody>
-            <tr>
-                <td>Usuario:</td>
-                <td>
-                    <select name="ipusuariolog" id="usuariolog">
-                        <option value="">Todos</option>
-                        <?php
-                        foreach ($row_rsselecionausuariolog as $row) {
-                            echo '<option value="' . $row['ipusuariolog'] . '">' . $row['usuariolog'] . '</option>';
-                        }
-                        ?>
-                    </select>
-                </td>
-                <td>Tipo:</td>
-                <td>
-                    <select name="tipografico" id="tipografico">
-                        <option value="pizza">Pizza</option>
-                        <option value="funil" selected>Funil</option>
-                    </select>
-                </td>
-                <td>De:</td>
-                <td><input type="date" name="data1" value="<?php echo $data1; ?>"></td>
-                <td>Até:</td>
-                <td><input type="date" name="data2" value="<?php echo $data2; ?>"></td>
-                <td><input type="submit" value="ok" onClick="document.getElementById('pop').style.display = 'block';"></td>
-            </tr>
-        </tbody>
-    </table>
-</form>
+<div class="container">
+    <div class="row clearfix">
+        <div class="col-md-12 column">
+            <span class="label label-default">Estatística de acesso</span>
 
+            <form action="?pagina=estatistica" method="POST">
+                <table border="0" align="left">
+                    <tbody>
+                        <tr>
+                            <td>Usuario:</td>
+                            <td>
+                                <select name="ipusuariolog" id="usuariolog">
+                                    <option value="">Todos</option>
+                                    <?php
+                                    foreach ($row_rsselecionausuariolog as $row) {
+                                        $selecionado = ($row['ipusuariolog'] == $ip) ? ' selected' : '';
+                                        echo '<option value="' . $row['ipusuariolog'] . '"' . $selecionado . '>' . $row['usuariolog'] . '</option>';
+                                    }
+                                    ?>
+                                </select>
+                            </td>
+                            <td>Tipo:</td>
+                            <td>
+                                <select name="tipografico" id="tipografico">
+                                    <option value="pizza">Pizza</option>
+                                    <option value="funil" selected>Funil</option>
+                                </select>
+                            </td>
+                            <td>De:</td>
+                            <td><input type="date" name="data1" value="<?php echo htmlspecialchars($data1); ?>"></td>
+                            <td>Até:</td>
+                            <td><input type="date" name="data2" value="<?php echo htmlspecialchars($data2); ?>"></td>
+                            <td><input type="submit" value="ok"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </form>
 
+            <div class="chart-card" style="margin-top:18px;">
+                <div class="chart-card-title"><?php echo htmlspecialchars($titulo_grafico); ?></div>
+                <?php if (empty($dadosfunil)): ?>
+                    <p style="text-align:center; padding:60px 0;">Nenhum acesso registrado no período selecionado.</p>
+                <?php else: ?>
+                    <div id="graficoFunilDominio" class="chart-box" style="height:460px; max-width:640px; margin:0 auto;"></div>
+                <?php endif; ?>
+            </div>
+        </div>
+    </div>
+</div>
+
+<?php if (!empty($dadosfunil)): ?>
 <script src="https://code.highcharts.com/highcharts.js"></script>
 <script src="https://code.highcharts.com/modules/funnel.js"></script>
-<script src="https://code.highcharts.com/modules/exporting.js"></script>
+<script>
+Highcharts.setOptions({
+    chart: { backgroundColor: 'transparent', style: { fontFamily: 'Inter, sans-serif' } },
+    title: { style: { color: '#e4e7ec' } },
+    credits: { enabled: false }
+});
 
-<div id="container" style="min-width: 410px; max-width: 600px; height: 400px; margin: 0 auto"></div>
-
-<script type="text/javascript">
-Highcharts.chart('container', {
-    chart: {
-        type: 'funnel'
-    },
-    title: {
-        text: '<?php echo "Grafico de utilização por Dominio de $usuariolog IP: $ip " ?>'
-    },
+Highcharts.chart('graficoFunilDominio', {
+    chart: { type: 'funnel' },
+    title: { text: '' },
     plotOptions: {
         series: {
             dataLabels: {
                 enabled: true,
                 format: '<b>{point.name}</b> ({point.y:,.0f})',
-                color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black',
+                color: '#e4e7ec',
                 softConnector: true
             },
             center: ['40%', '50%'],
             neckWidth: '20%',
             neckHeight: '0%',
-            width: '50%'
+            width: '70%'
         }
     },
-    legend: {
-        enabled: false
-    },
+    legend: { enabled: false },
     series: [{
         name: 'Visitas',
-        data: [
-            <?php
-                echo $tudo2;
-            ?>
-        ]
+        data: <?php echo json_encode($dadosfunil); ?>
     }]
 });
-
 </script>
-
-
-
-
-<html>
-    <head>
-
-        <style>
-            #pop{background-color:#b0c4de;display:none;position:absolute;top:50%;left:50%;margin-left:-150px;margin-top:-100px;padding:10px;width:auto;height:auto;border:1px solid #d0d0d0}
-
-        </style>
-    </head>
-    <body>
-        <!--     <a onClick="document.getElementById('pop').style.display='block';" href="/site/gestorserver/log/?pagina=status">Processar Log</a>-->
-        <div id="pop">
-            <a href="#" onClick="document.getElementById('pop').style.display = 'none';"></a>
-            <br />
-
-
-            <p class="align-center"><img src="/site/images/progresso.gif" width="20" height="20" alt="progress"/>Aguarde... </p>
-            <p>Processando</p>
-
-
-
-
-        </div>
+<?php endif; ?>

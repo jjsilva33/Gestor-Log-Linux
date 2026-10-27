@@ -5,7 +5,7 @@ if (!isset($_SESSION)) {
 $nivel_necessario = 5;
 if (!isset($_SESSION['UsuarioID']) || ($_SESSION['UsuarioNivel'] > $nivel_necessario)) {
     session_destroy();
-    header("Location: /site/gestorserver/log/login.html");
+    header("Location: /site/login/index.php");
     exit;
 }
 ?>
@@ -18,6 +18,14 @@ $data1 = $_REQUEST['data1'];
 $data2 = $_REQUEST['data2'];
 $tipo = $_REQUEST['tipo'];
 $ip = $_REQUEST['ipusuariolog'];
+$usuariolog = '';
+
+if ($data1 == '') {
+    $data1 = date('Y-m-d', strtotime('-30 days'));
+}
+if ($data2 == '') {
+    $data2 = date('Y-m-d');
+}
 
 try {
     $sqlselecionausuariolog = "SELECT * FROM `usuario_log` ";
@@ -41,7 +49,6 @@ try {
     $stmt_totalfiltro->execute();
     $resultotalfiltro = $stmt_totalfiltro->fetchAll(PDO::FETCH_ASSOC);
 
-    $tudo2 = '';
     $array = array();
 
     foreach ($resultotalfiltro as $row_rslistafiltrografico2) {
@@ -70,6 +77,7 @@ try {
     }
 
     $array = array_unique($array);
+    $dadospizza = array();
 
     foreach ($array as $dominiobusca) {
         $queryfiltro = "SELECT COUNT(*) AS Total FROM SystemEvents WHERE `Message` LIKE :dominiobusca AND `Message` LIKE :ip AND `ReceivedAt`>= :data1 AND `ReceivedAt`<= :data2";
@@ -81,137 +89,108 @@ try {
         $stmt_filtro->execute();
         $row = $stmt_filtro->fetch(PDO::FETCH_ASSOC);
 
-        $resultadototalfiltro = $row['Total'];
+        $resultadototalfiltro = (int) $row['Total'];
 
-        if ($resultadototalfiltro <= 0) {
-            $resultadototalfiltro = 0;
-        } else {
-            $tudo = "['$dominiobusca', $resultadototalfiltro],";
-            $tudo2 .= $tudo;
+        if ($resultadototalfiltro > 0) {
+            $dadospizza[] = array($dominiobusca, $resultadototalfiltro);
         }
     }
 } catch (PDOException $e) {
     echo "Failed to connect to MySQL: " . $e->getMessage();
     exit();
 }
+
+$titulo_grafico = 'Utilização por domínio';
+if ($usuariolog !== '') {
+    $titulo_grafico .= " — $usuariolog";
+}
+if ($ip !== '') {
+    $titulo_grafico .= " (IP: $ip)";
+}
 ?>
 
-<!DOCTYPE html>
-<html>
-    <head>
-        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-        <title>Grafico</title>
+<div class="container">
+    <div class="row clearfix">
+        <div class="col-md-12 column">
+            <span class="label label-default">Estatística de acesso</span>
 
-        <script type='text/javascript' src='/site/graficos/jqgrafico.js'></script>
+            <form action="?pagina=estatistica" method="POST">
+                <table border="0" align="left">
+                    <tbody>
+                        <tr>
+                            <td>Usuario:</td>
+                            <td>
+                                <select name="ipusuariolog" id="usuariolog">
+                                    <?php
+                                    echo '<option value="">Todos</option>';
+                                    foreach ($row_rsselecionausuariolog as $row) {
+                                        $selecionado = ($row['ipusuariolog'] == $ip) ? ' selected' : '';
+                                        echo '<option value="' . $row['ipusuariolog'] . '"' . $selecionado . '>' . $row['usuariolog'] . '</option>';
+                                    }
+                                    ?>
+                                </select>
+                            </td>
+                            <td>Tipo:</td>
+                            <td>
+                                <select name="tipografico" id="tipografico">
+                                    <option value="pizza" selected>Pizza</option>
+                                    <option value="funil">Funil</option>
+                                </select>
+                            </td>
+                            <td>De:</td>
+                            <td><input type="date" name="data1" value="<?php echo htmlspecialchars($data1); ?>"></td>
+                            <td>Até:</td>
+                            <td><input type="date" name="data2" value="<?php echo htmlspecialchars($data2); ?>"></td>
+                            <td><input type="submit" value="ok" /></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </form>
 
-        <link rel="stylesheet" type="text/css" href="/css/result-light.css">
-
-        <style type='text/css'>
-
-        </style>
-    </head>
-    <body>
-        <form action="?pagina=estatistica" method="POST">
-            <table border="0" align="center">
-                <tbody>
-                    <tr>
-                        <td>Usuario:</td>
-                        <td>
-                            <select name="ipusuariolog" id="usuariolog">
-                                <?php
-                                echo '<option value="">Todos</option>';
-                                foreach ($row_rsselecionausuariolog as $row) {
-                                    echo '<option value="' . $row['ipusuariolog'] . '">' . $row['usuariolog'] . '</option>';
-                                }
-                                ?>
-                            </select>
-                        </td>
-                        <td>Tipo:</td>
-                        <td>
-                            <select name="tipografico" id="tipografico">
-                                <option value="pizza" selected>Pizza</option>
-                                <option value="funil">Funil</option>
-                            </select>
-                        </td>
-                        <td>De:</td>
-                        <td><input type="date" name="data1" value="<?php echo $data1; ?>"></td>
-                        <td>Até:</td>
-                        <td><input type="date" name="data2" value="<?php echo $data2; ?>"></td>
-                        <td><input type="submit" value="ok" onClick="document.getElementById('pop').style.display='block';" /></td>
-                    </tr>
-                </tbody>
-            </table>
-        </form>
-
-        <script type='text/javascript'>
-            $(function () {
-                $('#container').highcharts({
-                    chart: {
-                        plotBackgroundColor: null,
-                        plotBorderWidth: null,
-                        plotShadow: false
-                    },
-                    title: {
-                        text: '<?php echo "Grafico de utilização por Dominio de $usuariolog IP: $ip " ?>'
-                    },
-                    tooltip: {
-                        pointFormat: '{series.name}: <b>{point.percentage}%</b>',
-                        percentageDecimals: 1
-                    },
-                    plotOptions: {
-                        pie: {
-                            allowPointSelect: true,
-                            cursor: 'pointer',
-                            dataLabels: {
-                                enabled: true,
-                                color: '#000000',
-                                connectorColor: '#000000',
-                                formatter: function () {
-                                    return '<b>' + this.point.name + '</b>: ' + this.percentage.toFixed(2) + ' %';
-                                }
-                            }
-                        }
-                    },
-                    series: [{
-                            type: 'pie',
-                            name: 'Utilizando',
-                            data: [
-                                <?php echo $tudo2; ?>
-                            ]
-                        }]
-                });
-            });
-        </script>
-
-        <script src="https://code.highcharts.com/highcharts.js"></script>
-        <script src="https://code.highcharts.com/modules/exporting.js"></script>
-
-        <div id="container" style="min-width: 400px; height: 400px; margin: 0 auto"></div>
-    </body>
-</html>
-
-
-
-
-<html>
-<head>
-
-<style>
-#pop{background-color:#b0c4de;display:none;position:absolute;top:50%;left:50%;margin-left:-150px;margin-top:-100px;padding:10px;width:auto;height:auto;border:1px solid #d0d0d0}
-
-</style>
-</head>
-<body>
-<!--     <a onClick="document.getElementById('pop').style.display='block';" href="/site/gestorserver/log/?pagina=status">Processar Log</a>-->
-<div id="pop">
-<a href="#" onClick="document.getElementById('pop').style.display='none';"></a>
-<br />
-
-
-		<p class="align-center"><img src="/site/images/progresso.gif" width="20" height="20" alt="progress"/>Aguarde... </p>
-	<p>Processando</p>
-
-
-
-
+            <div class="chart-card" style="margin-top:18px;">
+                <div class="chart-card-title"><?php echo htmlspecialchars($titulo_grafico); ?></div>
+                <?php if (empty($dadospizza)): ?>
+                    <p style="text-align:center; padding:60px 0;">Nenhum acesso registrado no período selecionado.</p>
+                <?php else: ?>
+                    <div id="graficoPizzaDominio" class="chart-box" style="height:460px;"></div>
+                <?php endif; ?>
+            </div>
+        </div>
+    </div>
 </div>
+
+<?php if (!empty($dadospizza)): ?>
+<script src="https://code.highcharts.com/highcharts.js"></script>
+<script>
+Highcharts.setOptions({
+    chart: { backgroundColor: 'transparent', style: { fontFamily: 'Inter, sans-serif' } },
+    title: { style: { color: '#e4e7ec' } },
+    credits: { enabled: false },
+    legend: { itemStyle: { color: '#8b93a1' }, itemHoverStyle: { color: '#e4e7ec' } }
+});
+
+Highcharts.chart('graficoPizzaDominio', {
+    chart: { type: 'pie' },
+    title: { text: '' },
+    tooltip: { pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b> ({point.y})' },
+    plotOptions: {
+        pie: {
+            allowPointSelect: true,
+            cursor: 'pointer',
+            borderWidth: 1,
+            borderColor: '#15181e',
+            dataLabels: {
+                enabled: true,
+                style: { color: '#e4e7ec', textOutline: 'none', fontSize: '11px' },
+                format: '{point.name}: {point.percentage:.1f}%'
+            }
+        }
+    },
+    series: [{
+        name: 'Acessos',
+        colorByPoint: true,
+        data: <?php echo json_encode($dadospizza); ?>
+    }]
+});
+</script>
+<?php endif; ?>
