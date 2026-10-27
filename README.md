@@ -81,10 +81,13 @@ mariadb -p Syslog < usuarios.sql
 mariadb -p Syslog < usuario_log.sql
 ```
 #### Configuração do arquivo site.php
+O arquivo `site/Connections/site.php` guarda a senha do banco e **não é versionado** no repositório (está no `.gitignore`). Copie o modelo e edite com as suas credenciais:
 ```
-sed -i 's/\$username = ""/\$username = "gestorlog"/' /var/www/html/Gestor-Log-Mikrotik-Linux/site/Connections/site.php
-sed -i 's/\$password = ""/\$password = "@#gestorlog"/' /var/www/html/Gestor-Log-Mikrotik-Linux/site/Connections/site.php
+cp /var/www/html/Gestor-Log-Mikrotik-Linux/site/Connections/site.sample.php /var/www/html/Gestor-Log-Mikrotik-Linux/site/Connections/site.php
+sed -i 's/\$username_site = ""/\$username_site = "gestorlog"/' /var/www/html/Gestor-Log-Mikrotik-Linux/site/Connections/site.php
+sed -i 's/\$password_site = ""/\$password_site = "@#gestorlog"/' /var/www/html/Gestor-Log-Mikrotik-Linux/site/Connections/site.php
 ```
+> Troque `@#gestorlog` por uma senha forte própria — não reutilize a deste exemplo.
 #### Permissões de pasta
 ```
 chmod -R 775 /var/www/html/Gestor-Log-Mikrotik-Linux
