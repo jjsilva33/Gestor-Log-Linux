@@ -60,7 +60,7 @@ apt-get install -y phpmyadmin
 #### Clone do repositório
 ```
 cd /var/www/html/
-git clone https://github.com/bylltec-projetos/Gestor-Log-Mikrotik-Linux.git
+git clone https://github.com/jjsilva33/Gestor-Log-Linux.git
 ```
 #### Configuração do rsyslog.conf
 ```
@@ -71,37 +71,37 @@ sudo systemctl restart systemd-journald
 
 #### Configuração do apache2
 ```
-sed -i 's|DocumentRoot /var/www/html|DocumentRoot /var/www/html/Gestor-Log-Mikrotik-Linux|' /etc/apache2/sites-available/000-default.conf
+sed -i 's|DocumentRoot /var/www/html|DocumentRoot /var/www/html/Gestor-Log-Linux|' /etc/apache2/sites-available/000-default.conf
 systemctl restart apache2
 ```
 #### Importação das tabelas do banco de dados
 ```
-cd /var/www/html/Gestor-Log-Mikrotik-Linux
+cd /var/www/html/Gestor-Log-Linux
 mariadb -p Syslog < usuarios.sql
 mariadb -p Syslog < usuario_log.sql
 ```
 #### Configuração do arquivo site.php
 O arquivo `site/Connections/site.php` guarda a senha do banco e **não é versionado** no repositório (está no `.gitignore`). Copie o modelo e edite com as suas credenciais:
 ```
-cp /var/www/html/Gestor-Log-Mikrotik-Linux/site/Connections/site.sample.php /var/www/html/Gestor-Log-Mikrotik-Linux/site/Connections/site.php
-sed -i 's/\$username_site = ""/\$username_site = "gestorlog"/' /var/www/html/Gestor-Log-Mikrotik-Linux/site/Connections/site.php
-sed -i 's/\$password_site = ""/\$password_site = "@#gestorlog"/' /var/www/html/Gestor-Log-Mikrotik-Linux/site/Connections/site.php
+cp /var/www/html/Gestor-Log-Linux/site/Connections/site.sample.php /var/www/html/Gestor-Log-Linux/site/Connections/site.php
+sed -i 's/\$username_site = ""/\$username_site = "gestorlog"/' /var/www/html/Gestor-Log-Linux/site/Connections/site.php
+sed -i 's/\$password_site = ""/\$password_site = "@#gestorlog"/' /var/www/html/Gestor-Log-Linux/site/Connections/site.php
 ```
 > Troque `@#gestorlog` por uma senha forte própria — não reutilize a deste exemplo.
 #### Permissões de pasta
 ```
-chmod -R 775 /var/www/html/Gestor-Log-Mikrotik-Linux
+chmod -R 775 /var/www/html/Gestor-Log-Linux
 ```
 #### Agendar no crontab para o php execultar o backup a cada 2 hora comando abaixo e adicionando a linha conforme necessidade
 ```
 crontab -e
 ```
 ```
-0 */2 * * * php /var/www/html/Gestor-Log-Mikrotik-Linux/site/gestorserver/log/backuplog/action_backup_agendado.php
+0 */2 * * * php /var/www/html/Gestor-Log-Linux/site/gestorserver/log/backuplog/action_backup_agendado.php
 ```
 
 #### Agendamento do backup no crontab todo domingo
-#echo "0 0 * * 0 php /var/www/html/Gestor-Log-Mikrotik-Linux/site/gestorserver/log/backuplog/action_backup_agendado.php" >> /etc/crontab
+#echo "0 0 * * 0 php /var/www/html/Gestor-Log-Linux/site/gestorserver/log/backuplog/action_backup_agendado.php" >> /etc/crontab
 
 #### Configuração do backup diário
 ```
