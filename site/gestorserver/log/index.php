@@ -74,6 +74,9 @@ if (!isset($_SESSION['UsuarioID']) OR ($_SESSION['UsuarioNivel'] > $nivel_necess
 								<li>
 									<a href="?pagina=manutencao">Manutencao do log</a>
 								</li>
+								<li>
+									<a href="?pagina=atualizar">Atualizar sistema</a>
+								</li>
 <!--								<li>
 									<a href="https://www.bylltec.com.br/site/home.php?pagina=suporte">Ajudar no desenvolvimento</a>
 								</li>
@@ -155,6 +158,11 @@ if ($pagina ==''){
 
   require('./add_novo_usuario.php');
     require('./usuarios_cadastrados.php');
+ }
+
+ if ($pagina =='atualizar'){
+
+  require('./atualizar_sistema.php');
  }
 
  ?>
