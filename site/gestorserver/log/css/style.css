@@ -504,6 +504,39 @@ input[type="image"]:hover {
 .stat-card .stat-value.ok { color: var(--accent); }
 
 /* ---------------------------------------------------------------- */
+/* Charts (status.php dashboard)                                     */
+/* ---------------------------------------------------------------- */
+.chart-grid {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+@media (max-width: 900px) {
+  .chart-grid { grid-template-columns: 1fr; }
+}
+
+.chart-card {
+  background: var(--bg-elevated-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  box-shadow: var(--shadow);
+}
+
+.chart-card-title {
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.chart-box {
+  height: 320px;
+}
+
+/* ---------------------------------------------------------------- */
 /* Misc overrides                                                    */
 /* ---------------------------------------------------------------- */
 hr { border-color: var(--border); }

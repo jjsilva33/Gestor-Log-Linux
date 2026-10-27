@@ -30,6 +30,50 @@ try {
     $disco_total = disk_total_space("/");
     $class = min((int)log($disco_total, $base), count($si_prefix) - 1);
     $disco_total_formatado = sprintf('%1.2f', $disco_total / pow($base, $class)) . ' ' . $si_prefix[$class];
+
+    // Acessos por dia (últimos 30 dias)
+    $sqlacessospordia = "SELECT DATE(ReceivedAt) AS dia, COUNT(*) AS total FROM SystemEvents WHERE ReceivedAt >= DATE_SUB(NOW(), INTERVAL 30 DAY) GROUP BY DATE(ReceivedAt) ORDER BY dia ASC";
+    $queryacessospordia = $pdo->query($sqlacessospordia);
+    $categoriasdias = array();
+    $totaispordia = array();
+    while ($row = $queryacessospordia->fetch(PDO::FETCH_ASSOC)) {
+        $categoriasdias[] = date('d/m', strtotime($row['dia']));
+        $totaispordia[] = (int) $row['total'];
+    }
+
+    // Top domínios acessados (últimos 30 dias)
+    $sqltopdominios = "SELECT Message, COUNT(Message) AS ContMessage FROM SystemEvents WHERE `SysLogTag`='web-proxy,account' AND ReceivedAt >= DATE_SUB(NOW(), INTERVAL 30 DAY) GROUP BY Message ORDER BY ContMessage DESC LIMIT 0,200";
+    $querytopdominios = $pdo->query($sqltopdominios);
+    $dominiosbrutos = array();
+    while ($row = $querytopdominios->fetch(PDO::FETCH_ASSOC)) {
+        $texto = $row['Message'];
+        $posicao = strpos($texto, 'http://');
+        if ($posicao !== false) {
+            $resto = explode('/', substr($texto, $posicao + 7));
+            $dominio = $resto[0];
+        } else {
+            $posicao = strpos($texto, 'https://');
+            if ($posicao !== false) {
+                $resto = explode('/', substr($texto, $posicao + 8));
+                $dominio = $resto[0];
+            } else {
+                continue;
+            }
+        }
+        if ($dominio === '') {
+            continue;
+        }
+        if (!isset($dominiosbrutos[$dominio])) {
+            $dominiosbrutos[$dominio] = 0;
+        }
+        $dominiosbrutos[$dominio] += (int) $row['ContMessage'];
+    }
+    arsort($dominiosbrutos);
+    $dominiosbrutos = array_slice($dominiosbrutos, 0, 12, true);
+    $dadospizzadominios = array();
+    foreach ($dominiosbrutos as $dominio => $total) {
+        $dadospizzadominios[] = array($dominio, $total);
+    }
 } catch (PDOException $e) {
     echo "Failed to connect to MySQL: " . $e->getMessage();
     exit();
@@ -60,12 +104,80 @@ try {
                 </div>
             </div>
 
+            <div class="chart-grid">
+                <div class="chart-card">
+                    <div class="chart-card-title">Acessos por dia (últimos 30 dias)</div>
+                    <div id="graficoAcessosDia" class="chart-box"></div>
+                </div>
+                <div class="chart-card">
+                    <div class="chart-card-title">Domínios mais acessados</div>
+                    <div id="graficoDominios" class="chart-box"></div>
+                </div>
+            </div>
+
             <?php
             require("backuplog/listar_arquivos.php");
             ?>
         </div>
     </div>
 </div>
+
+<script src="https://code.highcharts.com/highcharts.js"></script>
+<script>
+Highcharts.setOptions({
+    chart: { backgroundColor: 'transparent', style: { fontFamily: 'Inter, sans-serif' } },
+    title: { style: { color: '#e4e7ec' } },
+    credits: { enabled: false },
+    legend: { itemStyle: { color: '#8b93a1' }, itemHoverStyle: { color: '#e4e7ec' } }
+});
+
+Highcharts.chart('graficoAcessosDia', {
+    chart: { type: 'column' },
+    title: { text: '' },
+    xAxis: {
+        categories: <?php echo json_encode($categoriasdias); ?>,
+        labels: { style: { color: '#8b93a1' } },
+        lineColor: '#2c323d',
+        tickColor: '#2c323d'
+    },
+    yAxis: {
+        title: { text: '' },
+        gridLineColor: '#242931',
+        labels: { style: { color: '#8b93a1' } }
+    },
+    series: [{
+        name: 'Registros',
+        data: <?php echo json_encode($totaispordia); ?>,
+        color: '#2dd4bf',
+        borderRadius: 3,
+        borderWidth: 0
+    }]
+});
+
+Highcharts.chart('graficoDominios', {
+    chart: { type: 'pie' },
+    title: { text: '' },
+    tooltip: { pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b> ({point.y})' },
+    plotOptions: {
+        pie: {
+            allowPointSelect: true,
+            cursor: 'pointer',
+            borderWidth: 1,
+            borderColor: '#15181e',
+            dataLabels: {
+                enabled: true,
+                style: { color: '#e4e7ec', textOutline: 'none', fontSize: '11px' },
+                format: '{point.name}: {point.percentage:.1f}%'
+            }
+        }
+    },
+    series: [{
+        name: 'Acessos',
+        colorByPoint: true,
+        data: <?php echo json_encode($dadospizzadominios); ?>
+    }]
+});
+</script>
 
 
 
