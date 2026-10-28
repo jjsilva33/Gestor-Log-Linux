@@ -8,12 +8,12 @@ $data1 = $_REQUEST['data1'];
 $data2 = $_REQUEST['data2'];
 
 // definir o numero de itens por pagina
-$itens_por_pagina = 10000;
+$itens_por_pagina = 50;
 
 // pegar a pagina atual
-$pagina_limite = intval($_GET['pagina_limite']);
-if ($pagina_limite <= 0)
-    $pagina_limite = 1;
+$pagina_atual = intval($_GET['pagina_limite']);
+if ($pagina_atual <= 0)
+    $pagina_atual = 1;
 
 if ($data1 != "" || $data2 != "") {
     $_SESSION['data1'] = $data1;
@@ -27,31 +27,26 @@ if ($_POST) {
 }
 $palavra = $_SESSION['palavra'];
 
-if ($pagina_limite != "") {
-    $_SESSION['pagina_limite'] = $pagina_limite;
+$_SESSION['pagina_limite'] = $pagina_atual;
+$pagina_limite = $pagina_atual;
+
+// Sem filtro de data definido, limita aos últimos 7 dias por padrão
+// (evita varrer a tabela inteira, que tem milhões de linhas)
+if ($data1 == '') {
+    $data1 = date('Y-m-d', strtotime('-7 days'));
 }
-$pagina_limite = $_SESSION['pagina_limite'];
+if ($data2 == '') {
+    $data2 = date('Y-m-d');
+}
 
-//$data1br = date('d/m/Y', strtotime($data1));
-//$data2br = date('d/m/Y', strtotime($data2));
+$offset = ($pagina_atual - 1) * $itens_por_pagina;
 
-//if ( $data1 == "") {
-//   $data1 = date('Y-m-d', strtotime("-7 days"));
-//
-//
-//}
-//if ( $data2 == "") {
-//
-//   $data2 = date('Y-m-d');
-//
-//}
-
-$querybuscalog = $pdo->prepare("SELECT * FROM `SystemEvents` WHERE `Message` LIKE :palavra AND `Message` LIKE :ip AND `ReceivedAt` >= :data1 AND `ReceivedAt` <= :data2 ORDER BY `ID` DESC LIMIT :pagina_limite, :itens_por_pagina");
+$querybuscalog = $pdo->prepare("SELECT * FROM `SystemEvents` WHERE `Message` LIKE :palavra AND `Message` LIKE :ip AND `ReceivedAt` >= :data1 AND `ReceivedAt` <= :data2 ORDER BY `ID` DESC LIMIT :offset, :itens_por_pagina");
 $querybuscalog->bindValue(':palavra', "%$palavra%");
 $querybuscalog->bindValue(':ip', "%$ip%");
 $querybuscalog->bindValue(':data1', "$data1 00:00:00");
 $querybuscalog->bindValue(':data2', "$data2 23:59:59");
-$querybuscalog->bindValue(':pagina_limite', $pagina_limite, PDO::PARAM_INT);
+$querybuscalog->bindValue(':offset', $offset, PDO::PARAM_INT);
 $querybuscalog->bindValue(':itens_por_pagina', $itens_por_pagina, PDO::PARAM_INT);
 $querybuscalog->execute();
 
@@ -158,9 +153,12 @@ $queryselecionausuariolog = $pdo->query($sqlselecionausuariolog);
                 </tbody>
             </table>
             <ul class="pagination">
+                <?php if ($pagina_limite > 1): ?>
                 <li>
                     <a href="?pagina=relatorio&pagina_limite=<?php echo $pagina_limite - 1; ?>">Anterior</a>
                 </li>
+                <?php endif; ?>
+                <li><a href="#" style="pointer-events:none;">Página <?php echo $pagina_limite; ?></a></li>
                 <!--
                                 <li>
                                     <a href="#">1</a>
