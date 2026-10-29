@@ -103,7 +103,6 @@ $config_aberta = in_array($pagina_atual, $paginas_config, true);
 				<a href="?pagina=adicionar_usuario" class="<?php echo trim('nav-sublink' . nav_active('adicionar_usuario', $pagina_atual)); ?>">Vincular usuario a IP</a>
 				<a href="?pagina=manutencao" class="<?php echo trim('nav-sublink' . nav_active('manutencao', $pagina_atual)); ?>">Manutencao do log</a>
 				<a href="?pagina=atualizar" class="<?php echo trim('nav-sublink' . nav_active('atualizar', $pagina_atual)); ?>">Atualizar sistema</a>
-				<a href="https://www.bylltec.com.br/site/home.php?pagina=manual" target="_blank" rel="noopener" class="nav-sublink">Manual</a>
 			</div>
 		</nav>
 
