@@ -1,2 +1,5 @@
 # Arquivo de credenciais do banco — copie de site/Connections/site.sample.php
 site/Connections/site.php
+
+# Token do receptor de log NAT — copie de site/gestorserver/nat/token.sample.php
+site/gestorserver/nat/token.php
