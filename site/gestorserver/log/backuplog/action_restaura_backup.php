@@ -8,7 +8,7 @@ salvar no banco de dados
 mysql -u root -pbitzer-17 --database=Syslog < 20200526164621.sql
 */
 
-require_once '/var/www/html/Gestor-Log-Mikrotik-Linux/site/Connections/site.php';
+require_once __DIR__ . '/../../../Connections/site.php';
 
 $data_hora = date("YmdHis");
 
@@ -20,8 +20,11 @@ if ($extensao == "tar.gz" || $extensao == "TAR.GZ") {
     $arquivo_sql = substr($arquivoNome, 0, -7);
     $arquivo = $arquivo_sql . ".sql";
 
+    $prefixo_credenciais = "MYSQL_PWD=" . escapeshellarg($password_site) . " ";
+    $host_usuario = "-h " . escapeshellarg($hostname_site) . " -u " . escapeshellarg($username_site);
+
     //Efetuando backup antes de restaurar
-    $comando = "mysqldump -u $username_site -p$password_site Syslog > /var/backups/gestorlog/diario/$data_hora.sql";
+    $comando = $prefixo_credenciais . "mysqldump $host_usuario Syslog > /var/backups/gestorlog/diario/$data_hora.sql";
     $output = shell_exec($comando);
     $saida_comando_compactar = shell_exec("cd /var/backups/gestorlog/diario/; /bin/tar -czvf $data_hora.tar.gz $data_hora.sql; rm $data_hora.sql");
 
@@ -35,7 +38,7 @@ if ($extensao == "tar.gz" || $extensao == "TAR.GZ") {
     //descompactar e restaurar
     $comando_descompacta_db =  "cd /var/backups/gestorlog/diario/; /bin/tar -xvzf $arquivoNome -C /var/backups/gestorlog/diario/";
     $saida_descompacta_db = shell_exec($comando_descompacta_db);
-    $comando_restaura_db = "mysql -u $username_site -p$password_site Syslog < /var/backups/gestorlog/diario/$data_hora.sql";
+    $comando_restaura_db = $prefixo_credenciais . "mysql $host_usuario Syslog < /var/backups/gestorlog/diario/$data_hora.sql";
     $saida_restaura_db = shell_exec($comando_restaura_db);
 } else {
     echo "Erro, Contate o administrador 2";

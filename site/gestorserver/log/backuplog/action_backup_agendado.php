@@ -1,7 +1,7 @@
 <?php
-require_once '/var/www/html/Gestor-Log-Mikrotik-Linux/site/Connections/site.php';
+require_once __DIR__ . '/../../../Connections/site.php';
 $data_hora = date("YmdHis");
-$comando = "mysqldump -u $username_site -p$password_site Syslog > /var/backups/gestorlog/diario/$data_hora.sql";
+$comando = "MYSQL_PWD=" . escapeshellarg($password_site) . " mysqldump -h " . escapeshellarg($hostname_site) . " -u " . escapeshellarg($username_site) . " Syslog > /var/backups/gestorlog/diario/$data_hora.sql";
 $output = shell_exec($comando);
 //echo $output;
 $saida_comando_compactar = shell_exec("cd /var/backups/gestorlog/diario/;

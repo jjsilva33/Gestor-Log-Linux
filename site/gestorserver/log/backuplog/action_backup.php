@@ -14,7 +14,7 @@ if (!isset($_SESSION['UsuarioID']) || ($_SESSION['UsuarioNivel'] > $nivel_necess
 <?php
 require_once '../../../Connections/site.php';
 $data_hora = date("YmdHis");
-$comando = "mysqldump -u $username_site -p$password_site Syslog > /var/backups/gestorlog/diario/$data_hora.sql";
+$comando = "MYSQL_PWD=" . escapeshellarg($password_site) . " mysqldump -h " . escapeshellarg($hostname_site) . " -u " . escapeshellarg($username_site) . " Syslog > /var/backups/gestorlog/diario/$data_hora.sql";
 //echo $comando;
 $output = shell_exec($comando);
 //echo $output;
