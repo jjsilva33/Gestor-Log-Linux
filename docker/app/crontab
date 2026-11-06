@@ -1,4 +1,4 @@
 0 2 * * * www-data php /var/www/html/site/gestorserver/log/backuplog/action_backup_agendado.php >> /var/log/cron-backup.log 2>&1
 30 2 * * * www-data php /var/www/html/site/gestorserver/log/backuplog/action_retencao_log.php >> /var/log/cron-retencao.log 2>&1
-* * * * * www-data php /var/www/html/site/gestorserver/nat/importar_de_syslog.php >> /var/log/cron-nat-import.log 2>&1
+* * * * * www-data flock -n /tmp/gestorlog-nat-import.lock php /var/www/html/site/gestorserver/nat/importar_de_syslog.php >> /var/log/cron-nat-import.log 2>&1
 45 2 * * * www-data php /var/www/html/site/gestorserver/log/backuplog/action_retencao_nat_logs.php >> /var/log/cron-retencao.log 2>&1

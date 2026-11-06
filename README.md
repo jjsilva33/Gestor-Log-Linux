@@ -120,7 +120,7 @@ crontab -e
 ```
 0 2 * * * php /var/www/html/Gestor-Log-Linux/site/gestorserver/log/backuplog/action_backup_agendado.php
 30 2 * * * php /var/www/html/Gestor-Log-Linux/site/gestorserver/log/backuplog/action_retencao_log.php >> /var/log/gestorlog-retencao.log 2>&1
-* * * * * php /var/www/html/Gestor-Log-Linux/site/gestorserver/nat/importar_de_syslog.php >> /var/log/gestorlog-nat-import.log 2>&1
+* * * * * flock -n /tmp/gestorlog-nat-import.lock php /var/www/html/Gestor-Log-Linux/site/gestorserver/nat/importar_de_syslog.php >> /var/log/gestorlog-nat-import.log 2>&1
 45 2 * * * php /var/www/html/Gestor-Log-Linux/site/gestorserver/log/backuplog/action_retencao_nat_logs.php >> /var/log/gestorlog-retencao.log 2>&1
 ```
 
@@ -129,7 +129,20 @@ extrai o mapeamento de NAT pra `nat_logs` (ver "Busca Judicial" no menu
 lateral) — não depende de nenhum script no Mikrotik, só do syslog que já
 está configurado. Ele sempre roda bem antes da janela de 7 dias do
 `SystemEvents` se fechar, então nenhum mapeamento de NAT se perde quando o
-dado bruto é apagado.
+dado bruto é apagado. O `flock -n` evita que duas execuções rodem ao mesmo
+tempo (se uma rodada ainda estiver processando um backlog grande quando o
+próximo minuto chegar, a nova simplesmente não inicia, em vez de empilhar
+processos concorrendo pelo banco).
+
+**Antes de colocar essa linha no cron pela primeira vez**, rode o
+importador manualmente até ele ficar em dia (senão a primeira execução via
+cron herda um backlog grande):
+```
+while php /var/www/html/Gestor-Log-Linux/site/gestorserver/nat/importar_de_syslog.php | tee -a /tmp/nat-catchup.log | grep -q "(60 lote(s))"; do :; done
+```
+Isso repete a importação até uma rodada processar menos que o teto de 60
+lotes (ou seja, não sobrou backlog) — a partir daí, cada execução do cron
+processa só ~1 minuto de dado novo e é rápida.
 
 #### Envio dos backups para o Google Drive (opcional, pela interface web)
 Os scripts de backup e retenção enviam automaticamente cada `.tar.gz`
