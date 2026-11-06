@@ -15,6 +15,7 @@ const RETENCAO_DIAS = 365;
 const TAMANHO_LOTE_EXCLUSAO = 5000;
 
 require_once __DIR__ . '/../../../Connections/site.php';
+require_once __DIR__ . '/rclone_upload.php';
 
 $cutoff = date('Y-m-d H:i:s', strtotime('-' . RETENCAO_DIAS . ' days'));
 
@@ -48,6 +49,7 @@ if (!file_exists($arquivo_sql) || filesize($arquivo_sql) === 0) {
 }
 
 shell_exec("cd " . escapeshellarg($pasta_retencao) . "; /bin/tar -czvf retencao_$data_hora.tar.gz retencao_$data_hora.sql; rm retencao_$data_hora.sql");
+enviar_para_drive("$pasta_retencao/retencao_$data_hora.tar.gz", 'retencao');
 
 // 2. Remove em lotes pra não travar a tabela com um DELETE gigante de uma vez
 $stmt_delete = $pdo->prepare('DELETE FROM SystemEvents WHERE ReceivedAt < :cutoff LIMIT ' . TAMANHO_LOTE_EXCLUSAO);

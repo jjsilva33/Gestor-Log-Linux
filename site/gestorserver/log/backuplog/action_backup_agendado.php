@@ -6,8 +6,10 @@ if (php_sapi_name() !== 'cli') {
 }
 
 require_once __DIR__ . '/../../../Connections/site.php';
+require_once __DIR__ . '/rclone_upload.php';
 
 $data_hora = date("YmdHis");
 $comando = "MYSQL_PWD=" . escapeshellarg($password_site) . " mysqldump -h " . escapeshellarg($hostname_site) . " -u " . escapeshellarg($username_site) . " Syslog > /var/backups/gestorlog/diario/$data_hora.sql";
 shell_exec($comando);
 shell_exec("cd /var/backups/gestorlog/diario/; /bin/tar -czvf $data_hora.tar.gz $data_hora.sql; rm $data_hora.sql");
+enviar_para_drive("/var/backups/gestorlog/diario/$data_hora.tar.gz", 'diario');
