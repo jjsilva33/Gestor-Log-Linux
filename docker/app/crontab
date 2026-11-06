@@ -1,1 +1,2 @@
-0 */2 * * * www-data php /var/www/html/site/gestorserver/log/backuplog/action_backup_agendado.php >> /var/log/cron-backup.log 2>&1
+0 2 * * * www-data php /var/www/html/site/gestorserver/log/backuplog/action_backup_agendado.php >> /var/log/cron-backup.log 2>&1
+30 2 * * * www-data php /var/www/html/site/gestorserver/log/backuplog/action_retencao_log.php >> /var/log/cron-retencao.log 2>&1

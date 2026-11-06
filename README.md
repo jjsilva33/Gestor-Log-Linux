@@ -100,12 +100,18 @@ sed -i 's/\$password_site = ""/\$password_site = "@#gestorlog"/' /var/www/html/G
 ```
 chmod -R 775 /var/www/html/Gestor-Log-Linux
 ```
-#### Agendar no crontab para o php execultar o backup a cada 2 hora comando abaixo e adicionando a linha conforme necessidade
+#### Agendar no crontab o backup diário e a retenção de log
+O backup completo roda 1x por dia (a tabela `SystemEvents` não é mais
+truncada a cada execução). Logo depois, a rotina de retenção arquiva e
+remove só os registros com mais de 90 dias, mantendo o restante
+pesquisável no painel — ajuste `RETENCAO_DIAS` em `action_retencao_log.php`
+se precisar de outro período.
 ```
 crontab -e
 ```
 ```
-0 */2 * * * php /var/www/html/Gestor-Log-Linux/site/gestorserver/log/backuplog/action_backup_agendado.php
+0 2 * * * php /var/www/html/Gestor-Log-Linux/site/gestorserver/log/backuplog/action_backup_agendado.php
+30 2 * * * php /var/www/html/Gestor-Log-Linux/site/gestorserver/log/backuplog/action_retencao_log.php >> /var/log/gestorlog-retencao.log 2>&1
 ```
 
 #### Agendamento do backup no crontab todo domingo
