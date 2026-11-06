@@ -93,6 +93,10 @@ $config_aberta = in_array($pagina_atual, $paginas_config, true);
 				<span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"></circle><path d="M8.5 13.5 7 22l5-3 5 3-1.5-8.5"></path></svg></span>
 				<span class="nav-label">Top Rank</span>
 			</a>
+			<a href="/site/gestorserver/log/?pagina=busca_judicial" class="<?php echo trim('nav-link' . nav_active('busca_judicial', $pagina_atual)); ?>">
+				<span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18"></path><path d="M5 7l-3 6a3 3 0 0 0 6 0z"></path><path d="M19 7l-3 6a3 3 0 0 0 6 0z"></path><path d="M3 7h6l-3-4z"></path><path d="M15 7h6l-3-4z"></path><path d="M5 21h14"></path></svg></span>
+				<span class="nav-label">Busca Judicial</span>
+			</a>
 
 			<button type="button" class="app-sidebar-section<?php echo $config_aberta ? ' open' : ''; ?>" id="appSidebarConfigToggle">
 				<span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg></span>
@@ -145,6 +149,11 @@ if ($pagina ==''){
  if ($pagina =='rank'){
 
   require('./top_rank.php');
+ }
+
+ if ($pagina =='busca_judicial'){
+
+  require('./busca_judicial.php');
  }
 
  if ($pagina =='estatistica'){
