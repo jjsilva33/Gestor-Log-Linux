@@ -57,7 +57,7 @@ foreach (array_slice(explode(' ', trim($nome_usuario)), 0, 2) as $parte) {
 }
 if ($iniciais_usuario === '') { $iniciais_usuario = 'U'; }
 
-$paginas_config = array('adicionar_usuario', 'manutencao', 'atualizar');
+$paginas_config = array('adicionar_usuario', 'manutencao', 'atualizar', 'backup_drive', 'backup_drive_callback');
 $config_aberta = in_array($pagina_atual, $paginas_config, true);
 ?>
 <button type="button" class="app-sidebar-toggle" id="appSidebarToggle" aria-label="Abrir menu">
@@ -103,6 +103,7 @@ $config_aberta = in_array($pagina_atual, $paginas_config, true);
 				<a href="?pagina=adicionar_usuario" class="<?php echo trim('nav-sublink' . nav_active('adicionar_usuario', $pagina_atual)); ?>">Vincular usuario a IP</a>
 				<a href="?pagina=manutencao" class="<?php echo trim('nav-sublink' . nav_active('manutencao', $pagina_atual)); ?>">Manutencao do log</a>
 				<a href="?pagina=atualizar" class="<?php echo trim('nav-sublink' . nav_active('atualizar', $pagina_atual)); ?>">Atualizar sistema</a>
+				<a href="?pagina=backup_drive" class="<?php echo trim('nav-sublink' . nav_active('backup_drive', $pagina_atual)); ?>">Backup na nuvem</a>
 			</div>
 		</nav>
 
@@ -167,6 +168,16 @@ if ($pagina ==''){
  if ($pagina =='atualizar'){
 
   require('./atualizar_sistema.php');
+ }
+
+ if ($pagina =='backup_drive'){
+
+  require('./backup_drive.php');
+ }
+
+ if ($pagina =='backup_drive_callback'){
+
+  require('./backup_drive_callback.php');
  }
 
  ?>

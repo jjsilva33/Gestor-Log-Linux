@@ -114,47 +114,25 @@ crontab -e
 30 2 * * * php /var/www/html/Gestor-Log-Linux/site/gestorserver/log/backuplog/action_retencao_log.php >> /var/log/gestorlog-retencao.log 2>&1
 ```
 
-#### Envio dos backups para o Google Drive (opcional)
-Os scripts de backup e retenção já tentam enviar cada `.tar.gz` gerado
-para o Google Drive via `rclone`, usando o remote `gdrive`. Se o `rclone`
-não estiver instalado ou esse remote não existir, o envio é simplesmente
-pulado — o backup local continua sendo feito normalmente.
+#### Envio dos backups para o Google Drive (opcional, pela interface web)
+Os scripts de backup e retenção enviam automaticamente cada `.tar.gz`
+gerado para o Google Drive, desde que a conta tenha sido conectada pelo
+painel — não precisa de SSH nem de terminal no dia a dia. Acesse
+**Configurações > Backup na nuvem** no menu lateral e siga as duas
+etapas mostradas na própria página:
 
-Instale o rclone:
-```
-curl https://rclone.org/install.sh | sudo bash
-```
-Como o servidor não tem navegador, a autorização da conta Gmail é feita
-em duas etapas. No **servidor**, rode:
-```
-rclone config
-```
-Escolha `n` (new remote), nome `gdrive`, tipo `drive` (Google Drive),
-deixe `client_id`/`client_secret` em branco, scope `drive` e, na pergunta
-"Use auto config?", responda `n`. O rclone vai mostrar um comando do tipo
-`rclone authorize "drive"`.
+1. Criar um ID de cliente OAuth no [Google Cloud Console](https://console.cloud.google.com/apis/credentials)
+   (único passo feito fora do painel, pelo navegador, na conta Gmail
+   onde os backups vão ficar guardados) e colar o Client ID/Client
+   Secret no formulário.
+2. Clicar em "Conectar ao Google Drive", logar com a conta Gmail e
+   autorizar — o painel volta sozinho confirmando a conexão.
 
-Copie esse comando e rode em **outra máquina com navegador** (seu
-computador, por exemplo, com o rclone instalado):
-```
-rclone authorize "drive"
-```
-Isso abre o navegador para você logar com a conta Gmail e autorizar.
-Depois de autorizar, ele imprime um token — cole esse token de volta no
-prompt que ficou esperando no servidor, e confirme a criação do remote.
-
-Confirme que funcionou:
-```
-rclone lsd gdrive:
-rclone mkdir gdrive:GestorLog-Backups
-```
-A partir do próximo backup/retenção agendado, os arquivos vão aparecer em
-`GestorLog-Backups/diario/` e `GestorLog-Backups/retencao/` no Drive. Pra
-testar sem esperar o cron:
-```
-php /var/www/html/Gestor-Log-Linux/site/gestorserver/log/backuplog/action_backup_agendado.php
-rclone ls gdrive:GestorLog-Backups
-```
+A partir daí os arquivos aparecem em `GestorLog-Backups/diario/` e
+`GestorLog-Backups/retencao/` no Drive da conta conectada,
+automaticamente, sem precisar repetir nada. Se o rsyslog/servidor
+estiver sem acesso à internet, ou a conta não estiver conectada, o
+envio é apenas pulado — o backup local continua normal.
 
 #### Agendamento do backup no crontab todo domingo
 #echo "0 0 * * 0 php /var/www/html/Gestor-Log-Linux/site/gestorserver/log/backuplog/action_backup_agendado.php" >> /etc/crontab

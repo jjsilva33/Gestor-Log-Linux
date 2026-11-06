@@ -6,7 +6,7 @@ if (php_sapi_name() !== 'cli') {
 }
 
 require_once __DIR__ . '/../../../Connections/site.php';
-require_once __DIR__ . '/rclone_upload.php';
+require_once __DIR__ . '/google_drive.php';
 
 $data_hora = date("YmdHis");
 $comando = "MYSQL_PWD=" . escapeshellarg($password_site) . " mysqldump -h " . escapeshellarg($hostname_site) . " -u " . escapeshellarg($username_site) . " Syslog > /var/backups/gestorlog/diario/$data_hora.sql";

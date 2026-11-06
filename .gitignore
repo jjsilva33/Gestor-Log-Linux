@@ -6,3 +6,7 @@ site/gestorserver/nat/token.php
 
 # Variáveis de ambiente do docker compose — copie de .env.example
 .env
+
+# Credenciais do Google Drive — geradas automaticamente ao salvar o
+# formulário em Configurações > Backup na nuvem (não precisa copiar nada)
+site/gestorserver/log/backuplog/drive_credentials.json

@@ -15,7 +15,7 @@ const RETENCAO_DIAS = 365;
 const TAMANHO_LOTE_EXCLUSAO = 5000;
 
 require_once __DIR__ . '/../../../Connections/site.php';
-require_once __DIR__ . '/rclone_upload.php';
+require_once __DIR__ . '/google_drive.php';
 
 $cutoff = date('Y-m-d H:i:s', strtotime('-' . RETENCAO_DIAS . ' days'));
 
