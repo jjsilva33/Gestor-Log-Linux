@@ -112,7 +112,13 @@ crontab -e
 ```
 0 2 * * * php /var/www/html/Gestor-Log-Linux/site/gestorserver/log/backuplog/action_backup_agendado.php
 30 2 * * * php /var/www/html/Gestor-Log-Linux/site/gestorserver/log/backuplog/action_retencao_log.php >> /var/log/gestorlog-retencao.log 2>&1
+* * * * * php /var/www/html/Gestor-Log-Linux/site/gestorserver/nat/importar_de_syslog.php >> /var/log/gestorlog-nat-import.log 2>&1
+45 2 * * * php /var/www/html/Gestor-Log-Linux/site/gestorserver/log/backuplog/action_retencao_nat_logs.php >> /var/log/gestorlog-retencao.log 2>&1
 ```
+
+A linha `* * * * *` (todo minuto) é o importador que lê o `SystemEvents` e
+extrai o mapeamento de NAT (ver "Busca judicial" no menu lateral) — não
+depende de nenhum script no Mikrotik, só do syslog que já está configurado.
 
 #### Envio dos backups para o Google Drive (opcional, pela interface web)
 Os scripts de backup e retenção enviam automaticamente cada `.tar.gz`

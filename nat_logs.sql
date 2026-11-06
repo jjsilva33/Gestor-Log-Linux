@@ -29,3 +29,16 @@ CREATE TABLE IF NOT EXISTS `nat_logs_auditoria` (
   `pesquisado_em` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Marcador de até onde o importador (site/gestorserver/nat/importar_de_syslog.php)
+-- já varreu o SystemEvents, pra cada execução continuar de onde parou em vez de
+-- reprocessar tudo de novo. Linha única (id sempre 1).
+CREATE TABLE IF NOT EXISTS `nat_logs_importacao_estado` (
+  `id` TINYINT UNSIGNED NOT NULL DEFAULT 1,
+  `ultimo_system_events_id` BIGINT UNSIGNED NOT NULL DEFAULT 0,
+  `atualizado_em` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+INSERT INTO `nat_logs_importacao_estado` (id, ultimo_system_events_id)
+SELECT 1, 0 WHERE NOT EXISTS (SELECT 1 FROM `nat_logs_importacao_estado` WHERE id = 1);
