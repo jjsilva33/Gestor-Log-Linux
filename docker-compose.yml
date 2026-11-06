@@ -55,7 +55,13 @@ services:
       - backups:/var/backups/gestorlog
     ports:
       - "8080:80"
-    networks: [gestorlog]
+    networks: [gestorlog, traefik]
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.gestorlog.rule=Host(`${DOMAIN}`)"
+      - "traefik.http.routers.gestorlog.entrypoints=websecure"
+      - "traefik.http.routers.gestorlog.tls.certresolver=${TRAEFIK_CERTRESOLVER}"
+      - "traefik.http.services.gestorlog.loadbalancer.server.port=80"
 
 volumes:
   db_data:
@@ -63,3 +69,6 @@ volumes:
 
 networks:
   gestorlog:
+  traefik:
+    name: ${TRAEFIK_NETWORK}
+    external: true

@@ -1,56 +1,68 @@
-# Deploy com Docker (VPS Contabo ou similar)
+# Deploy com Docker via Portainer + Traefik
 
 Sobe 3 containers: `app` (PHP + Apache, o painel), `db` (MariaDB) e `rsyslog`
-(recebe o log do Mikrotik na porta 514 e grava direto no banco).
+(recebe o log do Mikrotik na porta 514 e grava direto no banco). O `app` é
+roteado pelo Traefik (HTTPS automático) em vez de expor a porta direto.
 
-## 1. Pré-requisitos na VPS
+Pré-requisito: Portainer e Traefik já rodando na VPS, com o Traefik ligado
+a uma network Docker externa (geralmente chamada `traefik` ou `proxy`).
 
-```
-curl -fsSL https://get.docker.com | sh
-apt-get install -y docker-compose-plugin
-```
-
-## 2. Clonar e configurar
+## 1. Descobrir o nome da network e do certresolver do seu Traefik
 
 ```
-git clone https://github.com/jjsilva33/Gestor-Log-Linux.git
-cd Gestor-Log-Linux
-cp .env.example .env
-nano .env   # preencha DB_ROOT_PASSWORD, DB_PASSWORD e NAT_RECEIVER_TOKEN
+docker network ls | grep -i traefik
 ```
 
-Gere senhas/token fortes com `openssl rand -hex 32`.
+E veja, na stack do próprio Traefik (Portainer → Stacks → a stack do
+Traefik → Editor), o nome configurado em `--certificatesresolvers.<nome>...`
+— é esse `<nome>` que vai em `TRAEFIK_CERTRESOLVER`.
 
-## 3. Subir os containers
+## 2. Criar a stack no Portainer
 
-```
-docker compose up -d --build
-docker compose logs -f
-```
+**Stacks → Add stack**
+
+- **Name:** `gestorlog`
+- **Build method:** "Repository", apontando para
+  `https://github.com/jjsilva33/Gestor-Log-Linux.git`, branch `master`,
+  compose path `docker-compose.yml` (ou "Web editor" colando o conteúdo do
+  arquivo, se preferir não linkar o repositório).
+- **Environment variables:** preencha (equivalente ao `.env`):
+
+  | Variável | Valor |
+  |---|---|
+  | `DB_ROOT_PASSWORD` | senha forte (`openssl rand -hex 32`) |
+  | `DB_NAME` | `Syslog` |
+  | `DB_USER` | `gestorlog` |
+  | `DB_PASSWORD` | senha forte |
+  | `NAT_RECEIVER_TOKEN` | token forte (`openssl rand -hex 32`) |
+  | `DOMAIN` | `log.seudominio.com.br` |
+  | `TRAEFIK_NETWORK` | nome achado no passo 1 |
+  | `TRAEFIK_CERTRESOLVER` | nome achado no passo 1 |
+
+- Clique em **Deploy the stack**.
 
 Na primeira subida o MariaDB roda os scripts em `docker/mariadb/init/` e os
 `.sql` da raiz do projeto automaticamente (schema do rsyslog, tabela de
-usuários, tabela de NAT). Isso só acontece quando o volume `db_data` está
-vazio — se precisar recriar o banco do zero: `docker compose down -v`.
+usuários, tabela de NAT) — só acontece com o volume `db_data` vazio.
 
-## 4. Login padrão
+## 3. Login padrão
 
 Usuário `admin`, senha a mesma dos dados em `usuarios.sql` (cadastrado como
 hash SHA1) — troque depois de logar pela primeira vez, em
 `Configurações → Manutenção do log`.
 
-## 5. Abrir as portas no firewall da VPS
+## 4. Firewall da VPS
+
+As portas 80/443 já devem estar liberadas pelo Traefik. Falta a porta do
+syslog, que **não passa pelo Traefik** (não é tráfego HTTP):
 
 ```
-ufw allow 80/tcp
 ufw allow 514/udp
 ufw allow 514/tcp
 ```
 
-**Importante — porta 514 exposta na internet:** syslog não tem autenticação.
-Qualquer um que descubra o IP da VPS pode mandar lixo pra sua tabela
-`SystemEvents`. Restrinja a porta 514 só aos IPs públicos dos seus Mikrotik
-(CONCENTRADOR_IMF e BORDA_IMF_TELECOM_2116), em vez de liberar geral:
+**Importante:** syslog não tem autenticação. Restrinja a porta 514 só aos
+IPs públicos dos seus Mikrotik, em vez de liberar geral:
 
 ```
 ufw allow from <IP_PUBLICO_DO_MIKROTIK_1> to any port 514
@@ -58,54 +70,61 @@ ufw allow from <IP_PUBLICO_DO_MIKROTIK_2> to any port 514
 ufw deny 514
 ```
 
-## 6. HTTPS (recomendado)
-
-O container `app` só serve HTTP na porta 8080 (mapeada do host). Coloque um
-proxy reverso com TLS na frente — forma mais simples, usando
-[Caddy](https://caddyserver.com/):
+A porta `8080` (mapeada do container `app`) é só uma via de acesso direto
+para debug — com o Traefik cuidando do domínio público, não precisa (e é
+melhor não) abrir ela no firewall:
 
 ```
-apt-get install -y caddy
+ufw deny 8080
 ```
 
-`/etc/caddy/Caddyfile`:
-```
-seu-dominio.com.br {
-    reverse_proxy localhost:8080
-}
-```
+## 5. Apontar os Mikrotik pro novo servidor
 
-```
-systemctl restart caddy
-```
-
-## 7. Apontar os Mikrotik pro novo servidor
-
-Depois que o DNS/IP da VPS estiver no ar, atualize em cada roteador:
+Depois que o domínio estiver resolvendo e o certificado emitido, atualize
+em cada roteador:
 
 - **Syslog (porta 514):** `/system logging action set remote/RemoteLog/remotenatlog remote=<IP_DA_VPS>`
 - **Script `natlog-export` (NAT da borda):** troque `$url` pra
-  `https://seu-dominio.com.br/site/gestorserver/nat/receiver.php` (ou
-  `http://<IP_DA_VPS>:8080/...` se ainda não tiver TLS configurado) e
-  `$token` pelo mesmo valor de `NAT_RECEIVER_TOKEN` do `.env`.
+  `https://log.seudominio.com.br/site/gestorserver/nat/receiver.php` e
+  `$token` pelo mesmo valor de `NAT_RECEIVER_TOKEN`.
 
-## 8. Backup
+## 6. Backup
 
-O container `app` roda o backup automático a cada 2h via cron (igual ao
-guia bare-metal), gravando em um volume Docker nomeado `backups`. Pra ver
-onde esse volume fica no disco da VPS:
+O container `app` roda o backup diário + retenção via cron (igual ao guia
+bare-metal), gravando em um volume Docker nomeado `backups`. Pra ver onde
+esse volume fica no disco da VPS:
 
 ```
 docker volume inspect gestor-log-linux_backups
 ```
 
+Pra mandar os backups também pro Google Drive, sem precisar de terminal,
+use **Configurações → Backup na nuvem** dentro do próprio painel (ver
+README.md).
+
 ## Diferenças em relação à instalação tradicional (README.md)
 
 - Não precisa instalar PHP/Apache/MariaDB/rsyslog direto na VPS — tudo roda
-  em container.
+  em container, gerenciado pelo Portainer.
 - `site/Connections/site.php` e `site/gestorserver/nat/token.php` são
   gerados automaticamente pelo `entrypoint.sh` do container `app` a partir
-  do `.env`, não precisam ser criados manualmente.
+  das variáveis de ambiente da stack, não precisam ser criados manualmente.
+- HTTPS é feito pelo Traefik (labels no serviço `app`), não por um proxy
+  reverso separado.
 - O schema do `rsyslog-mysql` (tabelas `SystemEvents` e
-  `SystemEventsProperties`) é criado por `docker/mariadb/init/01-rsyslog-schema.sql`
-  em vez de vir do pacote Debian `rsyslog-mysql` com dbconfig-common.
+  `SystemEventsProperties`) é criado por
+  `docker/mariadb/init/01-rsyslog-schema.sql` em vez de vir do pacote
+  Debian `rsyslog-mysql` com dbconfig-common.
+
+## Alternativa sem Portainer (CLI pura)
+
+Se preferir usar `docker compose` direto por SSH em vez do Portainer, o
+mesmo `docker-compose.yml` funciona — só copie `.env.example` para `.env`,
+preencha as mesmas variáveis (incluindo `TRAEFIK_NETWORK`/`TRAEFIK_CERTRESOLVER`
+se tiver um Traefik rodando, ou apague as labels `traefik.*` e a network
+`traefik` do arquivo se não usar Traefik) e rode:
+
+```
+docker compose up -d --build
+docker compose logs -f
+```
