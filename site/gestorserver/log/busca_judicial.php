@@ -108,7 +108,8 @@ if ($resultados) {
             <span class="label label-default">Busca judicial (NAT)</span>
             <p>Informe o IP público e a porta citados no ofício, e a data/hora exata (ou só a data, se não souber o horário) — tudo em UTC.</p>
 
-            <form action="?pagina=busca_judicial" method="GET">
+            <form action="" method="GET">
+                <input type="hidden" name="pagina" value="busca_judicial">
                 <table border="0" align="center">
                     <tbody>
                         <tr>
