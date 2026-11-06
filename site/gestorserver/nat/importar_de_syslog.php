@@ -43,6 +43,11 @@ do {
     $stmt_buscar->execute([':ultimo_id' => $ultimo_id]);
     $linhas = $stmt_buscar->fetchAll(PDO::FETCH_ASSOC);
 
+    // Agrupa o lote inteiro numa única transação -- sem isso, cada um dos
+    // milhares de INSERTs vira um commit (gravação em disco) separado, o
+    // que é o maior motivo de lentidão aqui, não o volume de dados em si.
+    $pdo->beginTransaction();
+
     foreach ($linhas as $linha) {
         $ultimo_id = max($ultimo_id, (int) $linha['ID']);
 
@@ -71,6 +76,7 @@ do {
     // Grava o progresso a cada lote (não só no final) -- se o script for
     // interrompido no meio, a próxima execução não reprocessa o que já foi feito.
     $stmt_atualizar_estado->execute([':id' => $ultimo_id]);
+    $pdo->commit();
     $lotes++;
 } while (count($linhas) === TAMANHO_LOTE && $lotes < MAX_LOTES_POR_EXECUCAO);
 
