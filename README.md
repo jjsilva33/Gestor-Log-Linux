@@ -103,7 +103,7 @@ chmod -R 775 /var/www/html/Gestor-Log-Linux
 #### Agendar no crontab o backup diário e a retenção de log
 O backup completo roda 1x por dia (a tabela `SystemEvents` não é mais
 truncada a cada execução). Logo depois, a rotina de retenção arquiva e
-remove só os registros com mais de 90 dias, mantendo o restante
+remove só os registros com mais de 365 dias, mantendo o restante
 pesquisável no painel — ajuste `RETENCAO_DIAS` em `action_retencao_log.php`
 se precisar de outro período.
 ```

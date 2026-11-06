@@ -11,7 +11,7 @@ if (php_sapi_name() !== 'cli') {
     exit('Acesso negado.');
 }
 
-const RETENCAO_DIAS = 90;
+const RETENCAO_DIAS = 365;
 const TAMANHO_LOTE_EXCLUSAO = 5000;
 
 require_once __DIR__ . '/../../../Connections/site.php';
