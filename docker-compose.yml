@@ -1,0 +1,65 @@
+services:
+  db:
+    image: mariadb:11
+    restart: unless-stopped
+    environment:
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MARIADB_DATABASE: ${DB_NAME}
+      MARIADB_USER: ${DB_USER}
+      MARIADB_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./docker/mariadb/init/01-rsyslog-schema.sql:/docker-entrypoint-initdb.d/01-rsyslog-schema.sql:ro
+      - ./usuarios.sql:/docker-entrypoint-initdb.d/02-usuarios.sql:ro
+      - ./usuario_log.sql:/docker-entrypoint-initdb.d/03-usuario_log.sql:ro
+      - ./nat_logs.sql:/docker-entrypoint-initdb.d/04-nat_logs.sql:ro
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks: [gestorlog]
+
+  rsyslog:
+    build: ./docker/rsyslog
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_HOST: db
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "514:514/udp"
+      - "514:514/tcp"
+    networks: [gestorlog]
+
+  app:
+    build:
+      context: .
+      dockerfile: docker/app/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_HOST: db
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      NAT_RECEIVER_TOKEN: ${NAT_RECEIVER_TOKEN}
+    volumes:
+      - backups:/var/backups/gestorlog
+    ports:
+      - "8080:80"
+    networks: [gestorlog]
+
+volumes:
+  db_data:
+  backups:
+
+networks:
+  gestorlog:

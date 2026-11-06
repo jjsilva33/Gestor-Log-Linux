@@ -1,0 +1,10 @@
+module(load="imudp")
+input(type="imudp" port="514")
+
+module(load="imtcp")
+input(type="imtcp" port="514")
+
+module(load="ommysql")
+
+# Grava todo log recebido na tabela SystemEvents (schema padrão rsyslog-mysql)
+*.* action(type="ommysql" server="__DB_HOST__" db="__DB_NAME__" uid="__DB_USER__" pwd="__DB_PASSWORD__")

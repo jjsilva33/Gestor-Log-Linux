@@ -3,3 +3,6 @@ site/Connections/site.php
 
 # Token do receptor de log NAT — copie de site/gestorserver/nat/token.sample.php
 site/gestorserver/nat/token.php
+
+# Variáveis de ambiente do docker compose — copie de .env.example
+.env
