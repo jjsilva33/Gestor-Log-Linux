@@ -5,13 +5,21 @@
 // restante continua pesquisável pelo painel (Relatório, Dashboard,
 // Estatística, Top Rank).
 //
+// RETENCAO_DIAS é curto de propósito (janela local pequena, pra liberar
+// espaço em disco): o dado judicialmente relevante (mapeamento de NAT)
+// já foi extraído pra nat_logs por importar_de_syslog.php muito antes de
+// chegar nesse prazo, e fica retido lá por 365 dias (ver
+// action_retencao_nat_logs.php). Os registros brutos do SystemEvents
+// continuam acessíveis depois disso só via o .tar.gz enviado ao Google
+// Drive (baixe e reimporte se precisar olhar o dado cru de novo).
+//
 // Só pode ser executado via CLI (cron), nunca por uma requisição web direta.
 if (php_sapi_name() !== 'cli') {
     http_response_code(403);
     exit('Acesso negado.');
 }
 
-const RETENCAO_DIAS = 365;
+const RETENCAO_DIAS = 7;
 const TAMANHO_LOTE_EXCLUSAO = 5000;
 
 require_once __DIR__ . '/../../../Connections/site.php';

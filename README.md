@@ -102,10 +102,18 @@ chmod -R 775 /var/www/html/Gestor-Log-Linux
 ```
 #### Agendar no crontab o backup diário e a retenção de log
 O backup completo roda 1x por dia (a tabela `SystemEvents` não é mais
-truncada a cada execução). Logo depois, a rotina de retenção arquiva e
-remove só os registros com mais de 365 dias, mantendo o restante
-pesquisável no painel — ajuste `RETENCAO_DIAS` em `action_retencao_log.php`
-se precisar de outro período.
+truncada a cada execução). Duas rotinas de retenção cuidam do espaço em
+disco, com janelas diferentes de propósito:
+
+- **`SystemEvents`** (dado bruto do syslog, usado por Relatório/Estatística
+  de domínio): fica só **7 dias** localmente, depois é exportado pro
+  Google Drive e apagado do servidor. Precisou de um dado mais antigo?
+  Baixa o `.tar.gz` da pasta `retencao` no Drive e reimporta.
+- **`nat_logs`** (mapeamento de NAT já extraído, usado pela Busca
+  Judicial): fica **365 dias** localmente — é o mínimo exigido pelo
+  art. 13 do Marco Civil da Internet, então essa janela é bem maior de
+  propósito. Ajuste `RETENCAO_DIAS`/`RETENCAO_DIAS_NAT` nos respectivos
+  scripts se precisar de outro período.
 ```
 crontab -e
 ```
@@ -117,8 +125,11 @@ crontab -e
 ```
 
 A linha `* * * * *` (todo minuto) é o importador que lê o `SystemEvents` e
-extrai o mapeamento de NAT (ver "Busca judicial" no menu lateral) — não
-depende de nenhum script no Mikrotik, só do syslog que já está configurado.
+extrai o mapeamento de NAT pra `nat_logs` (ver "Busca Judicial" no menu
+lateral) — não depende de nenhum script no Mikrotik, só do syslog que já
+está configurado. Ele sempre roda bem antes da janela de 7 dias do
+`SystemEvents` se fechar, então nenhum mapeamento de NAT se perde quando o
+dado bruto é apagado.
 
 #### Envio dos backups para o Google Drive (opcional, pela interface web)
 Os scripts de backup e retenção enviam automaticamente cada `.tar.gz`
