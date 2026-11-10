@@ -41,11 +41,14 @@ if ($data2 == '') {
 
 $offset = ($pagina_atual - 1) * $itens_por_pagina;
 
-// Filtra por SysLogTag igual às outras páginas de relatório de domínio: sem
-// isso, essa consulta também varre a enxurrada de mensagens de NAT
-// (connection-state:new), que hoje é ordens de grandeza maior que o log de
-// domínio de verdade e deixa a consulta (e o banco inteiro) muito lenta.
-$querybuscalog = $pdo->prepare("SELECT * FROM `SystemEvents` WHERE `SysLogTag`='web-proxy,account' AND `Message` LIKE :palavra AND `Message` LIKE :ip AND `ReceivedAt` >= :data1 AND `ReceivedAt` <= :data2 ORDER BY `ID` DESC LIMIT :offset, :itens_por_pagina");
+// Sem filtro de SysLogTag de propósito: este relatório mostra o log cru
+// (inclui as mensagens de NAT/firewall do BORDA_CGNAT, não só domínio).
+// Sem palavra-chave de busca, a consulta continua rápida (o banco só
+// precisa das últimas :itens_por_pagina linhas da janela de data, não
+// varre a tabela inteira) -- a lentidão só aparece ao usar o campo de
+// busca por palavra/IP com um intervalo de datas muito largo, já que aí
+// o `Message LIKE` precisa ser testado linha a linha dentro da janela.
+$querybuscalog = $pdo->prepare("SELECT * FROM `SystemEvents` WHERE `Message` LIKE :palavra AND `Message` LIKE :ip AND `ReceivedAt` >= :data1 AND `ReceivedAt` <= :data2 ORDER BY `ID` DESC LIMIT :offset, :itens_por_pagina");
 $querybuscalog->bindValue(':palavra', "%$palavra%");
 $querybuscalog->bindValue(':ip', "%$ip%");
 $querybuscalog->bindValue(':data1', "$data1 00:00:00");
