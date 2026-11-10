@@ -1,47 +1,49 @@
 <?php
-/*
-restaurar backup restor log
-
-descompactar
-tar -xvzf 20200526165942.tar.gz -C /var/backups/gestorlog/diario/
-salvar no banco de dados
-mysql -u root -pbitzer-17 --database=Syslog < 20200526164621.sql
-*/
+// Restaura o banco a partir de um backup .tar.gz gerado em /var/backups/gestorlog/diario/.
+// Ação destrutiva (substitui os dados atuais pelo conteúdo do backup) -- exige
+// login de admin, igual às outras ações de manutenção (faltava antes).
+if (!isset($_SESSION)) session_start();
+$nivel_necessario = 5;
+if (!isset($_SESSION['UsuarioID']) || ($_SESSION['UsuarioNivel'] > $nivel_necessario)) {
+    session_destroy();
+    header("Location: /site/login/index.php");
+    exit;
+}
 
 require_once __DIR__ . '/../../../Connections/site.php';
 
-$data_hora = date("YmdHis");
+$pasta_diario = '/var/backups/gestorlog/diario';
+$arquivo_nome = $_REQUEST['arquivo'] ?? '';
 
-//pegar o nome do arquivo que quer restaurar
-$arquivoNome = $_REQUEST["arquivo"];
-
-$extensao = substr($arquivoNome, -6);
-if ($extensao == "tar.gz" || $extensao == "TAR.GZ") {
-    $arquivo_sql = substr($arquivoNome, 0, -7);
-    $arquivo = $arquivo_sql . ".sql";
-
-    $prefixo_credenciais = "MYSQL_PWD=" . escapeshellarg($password_site) . " ";
-    $host_usuario = "-h " . escapeshellarg($hostname_site) . " -u " . escapeshellarg($username_site);
-
-    //Efetuando backup antes de restaurar
-    $comando = $prefixo_credenciais . "mysqldump $host_usuario Syslog > /var/backups/gestorlog/diario/$data_hora.sql";
-    $output = shell_exec($comando);
-    $saida_comando_compactar = shell_exec("cd /var/backups/gestorlog/diario/; /bin/tar -czvf $data_hora.tar.gz $data_hora.sql; rm $data_hora.sql");
-
-    //limpa base de dados
-    $sql_limpa_tabela = "TRUNCATE TABLE SystemEvents";
-    $stmt = $pdo->prepare($sql_limpa_tabela);
-    $stmt->execute();
-
-    //limpar arquivos desnecessarios e reinicia servicos
-    $saida_comando_limpar_arquivos = shell_exec("cd /var/log/; rm syslog*; rm messages*; rm user*; /etc/init.d/apache2 restart; /etc/init.d/mysql restart; /etc/init.d/rsyslog restart;");
-    //descompactar e restaurar
-    $comando_descompacta_db =  "cd /var/backups/gestorlog/diario/; /bin/tar -xvzf $arquivoNome -C /var/backups/gestorlog/diario/";
-    $saida_descompacta_db = shell_exec($comando_descompacta_db);
-    $comando_restaura_db = $prefixo_credenciais . "mysql $host_usuario Syslog < /var/backups/gestorlog/diario/$data_hora.sql";
-    $saida_restaura_db = shell_exec($comando_restaura_db);
-} else {
+// Só aceita o formato exato gerado pelo backup (AAAAMMDDHHMMSS.tar.gz) -- nunca
+// usa o valor recebido cru num comando de shell (evita injeção de comando e
+// path traversal, ex: "../../etc/passwd").
+if (!preg_match('/^(\d{14})\.tar\.gz$/', $arquivo_nome, $m) || !file_exists("$pasta_diario/$arquivo_nome")) {
     echo "Erro, Contate o administrador 2";
     exit;
 }
-?>
+
+$data_hora_arquivo = $m[1];
+$data_hora_agora = date('YmdHis');
+
+$prefixo_credenciais = "MYSQL_PWD=" . escapeshellarg($password_site) . " ";
+$host_usuario = "-h " . escapeshellarg($hostname_site) . " -u " . escapeshellarg($username_site);
+
+// Dump de segurança do estado atual antes de sobrescrever, caso precise voltar atrás
+shell_exec($prefixo_credenciais . "mysqldump $host_usuario Syslog > " . escapeshellarg("$pasta_diario/$data_hora_agora.sql"));
+shell_exec("cd " . escapeshellarg($pasta_diario) . "; /bin/tar -czf " . escapeshellarg("$data_hora_agora.tar.gz") . " " . escapeshellarg("$data_hora_agora.sql") . "; rm " . escapeshellarg("$data_hora_agora.sql"));
+
+// Descompacta e restaura. O dump do mysqldump já tem DROP TABLE/CREATE TABLE
+// pra cada tabela, então não precisa de TRUNCATE manual antes.
+shell_exec("cd " . escapeshellarg($pasta_diario) . "; /bin/tar -xzf " . escapeshellarg($arquivo_nome) . " -C " . escapeshellarg($pasta_diario));
+$arquivo_sql_restaurado = "$pasta_diario/$data_hora_arquivo.sql";
+
+if (!file_exists($arquivo_sql_restaurado)) {
+    echo "Erro, Contate o administrador 3";
+    exit;
+}
+
+shell_exec($prefixo_credenciais . "mysql $host_usuario Syslog < " . escapeshellarg($arquivo_sql_restaurado));
+unlink($arquivo_sql_restaurado);
+
+echo 'Backup restaurado com sucesso. <a href="/site/gestorserver/log/?pagina=status">Voltar</a>';
