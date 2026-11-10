@@ -85,14 +85,6 @@ $config_aberta = in_array($pagina_atual, $paginas_config, true);
 				<span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="8" y1="13" x2="16" y2="13"></line><line x1="8" y1="17" x2="16" y2="17"></line></svg></span>
 				<span class="nav-label">Relatorio</span>
 			</a>
-			<a href="/site/gestorserver/log/?pagina=estatistica" class="<?php echo trim('nav-link' . nav_active('estatistica', $pagina_atual)); ?>">
-				<span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg></span>
-				<span class="nav-label">Estatistica</span>
-			</a>
-			<a href="/site/gestorserver/log/?pagina=rank" class="<?php echo trim('nav-link' . nav_active('rank', $pagina_atual)); ?>">
-				<span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"></circle><path d="M8.5 13.5 7 22l5-3 5 3-1.5-8.5"></path></svg></span>
-				<span class="nav-label">Top Rank</span>
-			</a>
 			<a href="/site/gestorserver/log/?pagina=busca_judicial" class="<?php echo trim('nav-link' . nav_active('busca_judicial', $pagina_atual)); ?>">
 				<span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18"></path><path d="M5 7l-3 6a3 3 0 0 0 6 0z"></path><path d="M19 7l-3 6a3 3 0 0 0 6 0z"></path><path d="M3 7h6l-3-4z"></path><path d="M15 7h6l-3-4z"></path><path d="M5 21h14"></path></svg></span>
 				<span class="nav-label">Busca Judicial</span>
