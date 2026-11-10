@@ -42,9 +42,15 @@ import tarfile
 from pathlib import Path
 
 REGEX_INSERT = re.compile(
-    r"INSERT INTO `?(\w+)`?\s*\(([^)]*)\)\s*VALUES\s*(.+?);(?:\r?\n|$)",
+    r"INSERT INTO `?(\w+)`?\s*(?:\(([^)]*)\)\s*)?VALUES\s*(.+?);(?:\r?\n|$)",
     re.IGNORECASE | re.DOTALL,
 )
+
+REGEX_CREATE_TABLE = re.compile(
+    r"CREATE TABLE `?(\w+)`?\s*\((.*?)\n\)\s*(?:ENGINE|;)",
+    re.IGNORECASE | re.DOTALL,
+)
+REGEX_COLUNA_NO_CREATE = re.compile(r"^\s*`(\w+)`", re.MULTILINE)
 
 REGEX_NAT_NA_MENSAGEM = re.compile(
     r"proto\s+(TCP|UDP)(?:\s*\([^)]*\))?,\s*[\d.]+:\d+->[\d.]+:\d+,\s*NAT\s*\("
@@ -143,14 +149,41 @@ def desaspar(valor: str):
     return valor
 
 
+def extrair_colunas_create_table(sql_texto: str):
+    """
+    mysqldump normalmente NÃO inclui a lista de colunas no INSERT
+    ("INSERT INTO `tabela` VALUES (...)", sem "(col1, col2, ...)") --
+    nesse caso a ordem das colunas só dá pra saber olhando o CREATE TABLE
+    que vem antes no mesmo dump.
+    """
+    colunas_por_tabela = {}
+    for m in REGEX_CREATE_TABLE.finditer(sql_texto):
+        nome_tabela = m.group(1).strip("`").lower()
+        if nome_tabela not in TABELAS_RELEVANTES:
+            continue
+        colunas = REGEX_COLUNA_NO_CREATE.findall(m.group(2))
+        if colunas:
+            colunas_por_tabela[nome_tabela] = colunas
+    return colunas_por_tabela
+
+
 def carregar_tabelas(sql_texto: str):
     """Retorna {nome_tabela_minusculo: [ {coluna: valor}, ... ]} só das tabelas relevantes."""
+    colunas_do_create = extrair_colunas_create_table(sql_texto)
     tabelas = {}
+
     for m in REGEX_INSERT.finditer(sql_texto):
         nome_tabela = m.group(1).strip("`").lower()
         if nome_tabela not in TABELAS_RELEVANTES:
             continue
-        colunas = [c.strip(" `") for c in m.group(2).split(",")]
+
+        if m.group(2):
+            colunas = [c.strip(" `") for c in m.group(2).split(",")]
+        else:
+            colunas = colunas_do_create.get(nome_tabela)
+            if not colunas:
+                continue  # sem lista de colunas no INSERT nem CREATE TABLE no dump -- não dá pra mapear com segurança
+
         linhas = tabelas.setdefault(nome_tabela, [])
         for tupla in parse_valores_sql(m.group(3)):
             if len(tupla) != len(colunas):
