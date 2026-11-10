@@ -31,8 +31,12 @@ try {
     $class = min((int)log($disco_total, $base), count($si_prefix) - 1);
     $disco_total_formatado = sprintf('%1.2f', $disco_total / pow($base, $class)) . ' ' . $si_prefix[$class];
 
-    // Acessos por dia (últimos 30 dias)
-    $sqlacessospordia = "SELECT DATE(ReceivedAt) AS dia, COUNT(*) AS total FROM SystemEvents WHERE ReceivedAt >= DATE_SUB(NOW(), INTERVAL 30 DAY) GROUP BY DATE(ReceivedAt) ORDER BY dia ASC";
+    // Acessos por dia (últimos 7 dias -- janela de retenção local do SystemEvents).
+    // Filtra por SysLogTag igual às outras consultas de domínio: sem isso, essa
+    // consulta varre também a enxurrada de mensagens de NAT (connection-state:new),
+    // que é ordens de grandeza maior que o log de domínio e deixa o dashboard (e o
+    // resto do sistema, por carga no banco) extremamente lento.
+    $sqlacessospordia = "SELECT DATE(ReceivedAt) AS dia, COUNT(*) AS total FROM SystemEvents WHERE `SysLogTag`='web-proxy,account' AND ReceivedAt >= DATE_SUB(NOW(), INTERVAL 7 DAY) GROUP BY DATE(ReceivedAt) ORDER BY dia ASC";
     $queryacessospordia = $pdo->query($sqlacessospordia);
     $categoriasdias = array();
     $totaispordia = array();
@@ -41,8 +45,8 @@ try {
         $totaispordia[] = (int) $row['total'];
     }
 
-    // Top domínios acessados (últimos 30 dias)
-    $sqltopdominios = "SELECT Message, COUNT(Message) AS ContMessage FROM SystemEvents WHERE `SysLogTag`='web-proxy,account' AND ReceivedAt >= DATE_SUB(NOW(), INTERVAL 30 DAY) GROUP BY Message ORDER BY ContMessage DESC LIMIT 0,200";
+    // Top domínios acessados (últimos 7 dias -- janela de retenção local do SystemEvents)
+    $sqltopdominios = "SELECT Message, COUNT(Message) AS ContMessage FROM SystemEvents WHERE `SysLogTag`='web-proxy,account' AND ReceivedAt >= DATE_SUB(NOW(), INTERVAL 7 DAY) GROUP BY Message ORDER BY ContMessage DESC LIMIT 0,200";
     $querytopdominios = $pdo->query($sqltopdominios);
     $dominiosbrutos = array();
     while ($row = $querytopdominios->fetch(PDO::FETCH_ASSOC)) {
@@ -106,9 +110,9 @@ try {
 
             <div class="chart-grid">
                 <div class="chart-card">
-                    <div class="chart-card-title">Acessos por dia (últimos 30 dias)</div>
+                    <div class="chart-card-title">Acessos por dia (últimos 7 dias)</div>
                     <?php if (empty($totaispordia)): ?>
-                        <p style="text-align:center; padding:60px 0;">Nenhum registro nos últimos 30 dias.</p>
+                        <p style="text-align:center; padding:60px 0;">Nenhum registro nos últimos 7 dias.</p>
                     <?php else: ?>
                         <div id="graficoAcessosDia" class="chart-box"></div>
                     <?php endif; ?>
@@ -116,7 +120,7 @@ try {
                 <div class="chart-card">
                     <div class="chart-card-title">Domínios mais acessados</div>
                     <?php if (empty($dadospizzadominios)): ?>
-                        <p style="text-align:center; padding:60px 0;">Nenhum acesso de domínio (web-proxy) registrado nos últimos 30 dias.</p>
+                        <p style="text-align:center; padding:60px 0;">Nenhum acesso de domínio (web-proxy) registrado nos últimos 7 dias.</p>
                     <?php else: ?>
                         <div id="graficoDominios" class="chart-box"></div>
                     <?php endif; ?>

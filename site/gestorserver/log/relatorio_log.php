@@ -41,7 +41,11 @@ if ($data2 == '') {
 
 $offset = ($pagina_atual - 1) * $itens_por_pagina;
 
-$querybuscalog = $pdo->prepare("SELECT * FROM `SystemEvents` WHERE `Message` LIKE :palavra AND `Message` LIKE :ip AND `ReceivedAt` >= :data1 AND `ReceivedAt` <= :data2 ORDER BY `ID` DESC LIMIT :offset, :itens_por_pagina");
+// Filtra por SysLogTag igual às outras páginas de relatório de domínio: sem
+// isso, essa consulta também varre a enxurrada de mensagens de NAT
+// (connection-state:new), que hoje é ordens de grandeza maior que o log de
+// domínio de verdade e deixa a consulta (e o banco inteiro) muito lenta.
+$querybuscalog = $pdo->prepare("SELECT * FROM `SystemEvents` WHERE `SysLogTag`='web-proxy,account' AND `Message` LIKE :palavra AND `Message` LIKE :ip AND `ReceivedAt` >= :data1 AND `ReceivedAt` <= :data2 ORDER BY `ID` DESC LIMIT :offset, :itens_por_pagina");
 $querybuscalog->bindValue(':palavra', "%$palavra%");
 $querybuscalog->bindValue(':ip', "%$ip%");
 $querybuscalog->bindValue(':data1', "$data1 00:00:00");
